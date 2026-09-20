@@ -12,6 +12,56 @@ export type Course = {
   active: boolean;
 };
 
+export type RoadmapStage = {
+  _id: string;
+  order: number;
+  title: string;
+  lessonsCount: number;
+  hasTest: boolean;
+  summary: string;
+  modules: string[];
+  imageUrl: string;
+  active: boolean;
+};
+
+// Stage input without the server-managed fields.
+export type RoadmapStageDraft = Omit<RoadmapStage, '_id' | 'order'>;
+
+export type SiteContent = {
+  calculator: {
+    enabled: boolean;
+    amountMin: number;
+    amountMax: number;
+    amountStep: number;
+    currency: string;
+    horizonMonths: number;
+    tiers: Array<{ tier: string; lowPct: number; highPct: number }>;
+    disclaimer: string;
+  };
+  counters: {
+    enabled: boolean;
+    studentsTotal: number | null;
+    seatsLeft: number | null;
+    note: string;
+    updatedAt: string | null;
+  };
+  comparison: {
+    enabled: boolean;
+    leftTitle: string;
+    rightTitle: string;
+    rows: Array<{ label: string; left: string; right: string }>;
+  };
+  lessonPreview: {
+    enabled: boolean;
+    title: string;
+    description: string;
+    mediaUrl: string;
+    mediaAlt: string;
+    isIllustrative: boolean;
+  };
+  ticker: { enabled: boolean; items: string[] };
+};
+
 export type BotMode = 'off' | 'approve' | 'auto';
 
 export type BotState = {
@@ -79,6 +129,50 @@ export function saveCourse(course: Course) {
   return request<Course>(API_BASE, '/api/admin/courses', {
     method: 'PUT',
     body: JSON.stringify(course),
+  });
+}
+
+// --- apps/api (дорожня карта) ---
+
+export function fetchRoadmap() {
+  return request<RoadmapStage[]>(API_BASE, '/api/admin/roadmap');
+}
+
+export function createStage(draft: RoadmapStageDraft) {
+  return request<RoadmapStage>(API_BASE, '/api/admin/roadmap', {
+    method: 'POST',
+    body: JSON.stringify(draft),
+  });
+}
+
+export function updateStage(id: string, draft: RoadmapStageDraft) {
+  return request<RoadmapStage>(API_BASE, `/api/admin/roadmap/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(draft),
+  });
+}
+
+export function deleteStage(id: string) {
+  return request<{ ok: true }>(API_BASE, `/api/admin/roadmap/${id}`, { method: 'DELETE' });
+}
+
+export function reorderStages(items: Array<{ id: string; order: number }>) {
+  return request<RoadmapStage[]>(API_BASE, '/api/admin/roadmap/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ items }),
+  });
+}
+
+// --- apps/api (контент сайту) ---
+
+export function fetchSiteContent() {
+  return request<SiteContent>(API_BASE, '/api/admin/site-content');
+}
+
+export function saveSiteContent(patch: Partial<SiteContent>) {
+  return request<SiteContent>(API_BASE, '/api/admin/site-content', {
+    method: 'PUT',
+    body: JSON.stringify(patch),
   });
 }
 

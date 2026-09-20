@@ -9,3 +9,7 @@ Thumbs.db
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Матеріали курсів (платний контент) — не для публічного репозиторію
+крипта/
+*.pdf

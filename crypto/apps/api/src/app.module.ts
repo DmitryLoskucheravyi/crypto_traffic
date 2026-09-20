@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CoursesModule } from './courses/courses.module';
 import { AdminModule } from './admin/admin.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { RoadmapModule } from './roadmap/roadmap.module';
+import { SiteContentModule } from './site-content/site-content.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { TelegramModule } from './telegram/telegram.module';
     CoursesModule,
     AdminModule,
     TelegramModule,
+    RoadmapModule,
+    SiteContentModule,
   ],
 })
 export class AppModule {}

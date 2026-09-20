@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 
 const TABS = [
   { href: '/', label: 'Курси' },
+  { href: '/roadmap', label: 'Дорожня карта' },
+  { href: '/content', label: 'Контент сайту' },
   { href: '/channel-bot', label: 'Канал-бот' },
 ];
 

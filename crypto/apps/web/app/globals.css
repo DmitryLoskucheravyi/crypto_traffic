@@ -24,7 +24,8 @@
 
   /* Heading ladder — the page steps down one rung per section instead of
      falling off a cliff after the hero, and steps back up for the closing ask:
-       hero 4.25rem · bento 3rem · how-it-works 2.25rem · market 2rem ·
+       hero 4.25rem · bento 3rem · how-it-works 2.25rem · roadmap 2.125rem ·
+       market 2rem ·
        courses 2rem (heavier weight, it is the commercial section) ·
        faq 1.5rem · final CTA 2.25rem · footer body text.
      Sizes live on the sections themselves; this is the map they follow. */
@@ -70,6 +71,114 @@
 
   /* Graph-paper grid — the hero's full-bleed backdrop, reused behind the
      market chart so the two chart moments share one surface. */
+  /* Film grain over the flat background. Fixed, never interactive, and
+     deliberately faint — it adds depth to empty sections without touching
+     contrast anywhere. */
+  .grain-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    background-image: url('/grain.png');
+    background-repeat: repeat;
+    /* 512px tile drawn at 256 — finer speckle, and the tile is cross-faded at
+       its own edges so the repeat has no seam. The texture is white specks on
+       alpha, not a grey plate: on #0C0C0F a blend mode would have nothing to
+       work against, so the layer can only add light. */
+    background-size: 256px 256px;
+    opacity: 0.32;
+  }
+
+  /* Crosshair cursor. The `custom-cursor` class is added by the component
+     itself, so the native cursor is only hidden while the replacement is
+     actually mounted (never on touch, never with reduced motion). */
+  .custom-cursor,
+  .custom-cursor a,
+  .custom-cursor button {
+    cursor: none;
+  }
+
+  .cursor-crosshair-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .cursor-line {
+    position: absolute;
+    background: hsl(var(--ink) / 0.5);
+    transition: background-color 200ms ease;
+  }
+
+  .cursor-line-h {
+    left: -9px;
+    top: -0.5px;
+    width: 18px;
+    height: 1px;
+  }
+
+  .cursor-line-v {
+    top: -9px;
+    left: -0.5px;
+    height: 18px;
+    width: 1px;
+  }
+
+  .cursor-box {
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 18px;
+    height: 18px;
+    border: 1px solid hsl(var(--ink) / 0.25);
+    transition: width 200ms ease, height 200ms ease, left 200ms ease, top 200ms ease,
+      border-color 200ms ease;
+  }
+
+  .cursor-crosshair-root.is-target .cursor-box {
+    left: -14px;
+    top: -14px;
+    width: 28px;
+    height: 28px;
+    border-color: hsl(var(--accent));
+  }
+
+  .cursor-crosshair-root.is-target .cursor-line {
+    background: hsl(var(--accent));
+  }
+
+  /* Terminal slider: square thumb, accent track, no platform chrome. */
+  .calc-range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2px;
+    background: hsl(var(--ink) / 0.15);
+    outline: none;
+  }
+
+  .calc-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: hsl(var(--accent));
+    cursor: pointer;
+    box-shadow: 0 0 10px hsl(var(--accent) / 0.6);
+  }
+
+  .calc-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none;
+    border-radius: 0;
+    background: hsl(var(--accent));
+    cursor: pointer;
+    box-shadow: 0 0 10px hsl(var(--accent) / 0.6);
+  }
+
   .chart-grid {
     background-image:
       repeating-linear-gradient(to right, hsl(var(--ink) / 0.06) 0 1px, transparent 1px 72px),

@@ -10,6 +10,8 @@
     "dev:api": "npm run start:dev --workspace apps/api",
     "dev:admin": "npm run dev --workspace apps/admin",
     "dev:bot": "npm run start:dev --workspace apps/bot",
+    "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-up.ps1",
+    "dev:down": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-down.ps1",
     "build": "npm run build --workspaces"
   }
 }

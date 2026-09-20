@@ -4,6 +4,8 @@ import { GeistMono } from 'geist/font/mono';
 import { Unbounded } from 'next/font/google';
 import './globals.css';
 import { SmoothScroll } from './components/smooth-scroll';
+import { CrosshairCursor } from './components/effects/crosshair-cursor';
+import { ScrollProgress } from './components/effects/scroll-progress';
 
 // Display face for headings: heavy, wide, full Cyrillic coverage.
 const display = Unbounded({
@@ -23,7 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable}`}>
       <body>
+        <ScrollProgress />
+        <CrosshairCursor />
         <SmoothScroll>{children}</SmoothScroll>
+        {/* Grain sits above the sections but below the cursor, and never
+            takes pointer events. */}
+        <div className="grain-overlay" aria-hidden="true" />
       </body>
     </html>
   );

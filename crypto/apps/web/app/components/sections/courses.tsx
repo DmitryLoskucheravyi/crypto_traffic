@@ -6,6 +6,8 @@ import type { Course } from '../../lib/api';
 import { content } from '../../lib/content';
 import { TierCheck, CtaArrow } from '../icons';
 import { fadeUp, DURATION, EASE } from '../../lib/motion';
+import { TypedValue } from '../ui/typed-value';
+import { useMagnetic } from '../../lib/use-magnetic';
 
 const TIER_LABELS: Record<Course['tier'], string> = {
   basic: 'Базовый',
@@ -82,6 +84,7 @@ const CourseCard = ({
   botUsername: string;
 }) => {
   const reduceMotion = useReducedMotion();
+  const magnetic = useMagnetic<HTMLAnchorElement>();
   const ref = useRef<HTMLDivElement>(null);
   const px = useMotionValue(0);
   const py = useMotionValue(0);
@@ -144,11 +147,15 @@ const CourseCard = ({
         <h3 className="mt-4 text-xl font-medium">{course.title}</h3>
         <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-muted">{course.description}</p>
         <div className="mt-6 font-mono text-3xl text-ink">
-          {course.price}
+          <TypedValue value={String(course.price)} />
           <span className="text-base text-ink-muted"> {course.currency}</span>
         </div>
         {botUsername && (
-          <a
+          <motion.a
+            ref={magnetic.ref}
+            style={magnetic.style}
+            onPointerMove={magnetic.onPointerMove}
+            onPointerLeave={magnetic.onPointerLeave}
             href={`https://t.me/${botUsername}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -163,7 +170,7 @@ const CourseCard = ({
               size={16}
               className="transition-transform duration-standard ease-premium group-hover/cta:translate-x-1"
             />
-          </a>
+          </motion.a>
         )}
       </div>
     </motion.div>

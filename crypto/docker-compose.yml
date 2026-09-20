@@ -5,6 +5,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      # Прокидуємо назовні лише на loopback: потрібно, коли apps/api запущено
+      # локально (npm run dev:api), а не в контейнері.
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo-data:/data/db
     networks:
