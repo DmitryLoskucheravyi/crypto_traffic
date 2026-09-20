@@ -8,12 +8,16 @@ import { RoadmapStage, RoadmapStageDraft } from '../lib/api';
 // around, and a typo here would silently break the card.
 const IMAGE_OPTIONS = [
   { value: '', label: 'Без зображення' },
-  { value: '/roadmap-1.png', label: "Об'єкт 1" },
-  { value: '/roadmap-2.png', label: "Об'єкт 2" },
-  { value: '/roadmap-3.png', label: "Об'єкт 3" },
-  { value: '/roadmap-4.png', label: "Об'єкт 4" },
-  { value: '/roadmap-5.png', label: "Об'єкт 5" },
-  { value: '/roadmap-6.png', label: "Об'єкт 6" },
+  ...[1, 2, 3, 4, 5, 6].map((i) => ({ value: `/roadmap-${i}.png`, label: `Об'єкт ${i}` })),
+];
+
+// Shown instead of the isometric object while the card is expanded.
+const FRONT_IMAGE_OPTIONS = [
+  { value: '', label: 'Без підміни' },
+  ...[1, 2, 3, 4, 5, 6].map((i) => ({
+    value: `/roadmap-${i}-front.png`,
+    label: `Об'єкт ${i} — фронт`,
+  })),
 ];
 
 export const emptyDraft = (): RoadmapStageDraft => ({
@@ -23,6 +27,7 @@ export const emptyDraft = (): RoadmapStageDraft => ({
   summary: '',
   modules: [],
   imageUrl: '',
+  imageFrontUrl: '',
   active: true,
 });
 
@@ -33,6 +38,7 @@ const toDraft = (stage: RoadmapStage): RoadmapStageDraft => ({
   summary: stage.summary ?? '',
   modules: stage.modules ?? [],
   imageUrl: stage.imageUrl ?? '',
+  imageFrontUrl: stage.imageFrontUrl ?? '',
   active: stage.active,
 });
 
@@ -137,6 +143,21 @@ export const RoadmapStageEditor = ({ stage, onSave, onCancel }: Props) => {
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="mt-3">
+        <label className="block text-sm text-ink-muted">Зображення при розкритті</label>
+        <select
+          value={form.imageFrontUrl}
+          onChange={(e) => update('imageFrontUrl', e.target.value)}
+          className={field}
+        >
+          {FRONT_IMAGE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <label className="flex items-center gap-2 mt-4 text-sm text-ink-muted">

@@ -29,6 +29,11 @@ export class RoadmapStage extends Document {
   @Prop({ default: '' })
   imageUrl: string;
 
+  // Same object turned to face the viewer. Shown while the card is expanded;
+  // empty is valid and simply means no swap.
+  @Prop({ default: '' })
+  imageFrontUrl: string;
+
   @Prop({ required: true, default: true })
   active: boolean;
 }

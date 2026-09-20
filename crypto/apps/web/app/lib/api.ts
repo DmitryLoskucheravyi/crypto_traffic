@@ -16,6 +16,7 @@ export type RoadmapStage = {
   summary: string;
   modules: string[];
   imageUrl: string;
+  imageFrontUrl: string;
   active: boolean;
 };
 

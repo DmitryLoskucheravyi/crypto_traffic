@@ -7,7 +7,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { content } from '../../lib/content';
 import { RoadmapStage } from '../../lib/api';
-import { fadeUp } from '../../lib/motion';
+import { fadeUp, DURATION, EASE } from '../../lib/motion';
 import { RoadmapCard } from './roadmap-card';
 
 export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
@@ -103,10 +103,19 @@ export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
             return (
               <motion.li
                 key={stage._id}
-                initial={{ opacity: 0, y: 24, x: onRight ? 24 : -24 }}
-                whileInView={{ opacity: 1, y: 0, x: 0 }}
+                initial="hidden"
+                whileInView="visible"
                 viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                // Named states, not inline values: the card below reads the
+                // same state names and runs its own cascade off them.
+                variants={{
+                  hidden: { opacity: 0, x: onRight ? 24 : -24 },
+                  visible: {
+                    opacity: 1,
+                    x: 0,
+                    transition: { duration: DURATION.standard, ease: EASE },
+                  },
+                }}
                 className="relative pl-12 md:grid md:grid-cols-2 md:gap-10 md:pl-0 lg:gap-16"
               >
                 {/* Mobile only: with no illustration the rail is what carries

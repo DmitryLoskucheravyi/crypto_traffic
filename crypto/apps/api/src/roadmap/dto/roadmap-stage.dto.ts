@@ -44,6 +44,11 @@ export class CreateRoadmapStageDto {
   imageUrl?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  imageFrontUrl?: string;
+
+  @IsOptional()
   @IsBoolean()
   active?: boolean;
 

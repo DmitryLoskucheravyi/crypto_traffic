@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Unbounded } from 'next/font/google';
 import './globals.css';
+import { MotionConfig } from 'framer-motion';
 import { SmoothScroll } from './components/smooth-scroll';
 import { CrosshairCursor } from './components/effects/crosshair-cursor';
 import { ScrollProgress } from './components/effects/scroll-progress';
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ScrollProgress />
         <CrosshairCursor />
-        <SmoothScroll>{children}</SmoothScroll>
+        <MotionConfig reducedMotion="user">
+          <SmoothScroll>{children}</SmoothScroll>
+        </MotionConfig>
         {/* Grain sits above the sections but below the cursor, and never
             takes pointer events. */}
         <div className="grain-overlay" aria-hidden="true" />
