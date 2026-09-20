@@ -45,7 +45,7 @@ export default async function Page() {
       <Courses courses={courses} botUsername={botUsername} />
       <Faq />
       <FinalCta botUsername={botUsername} />
-      <Footer />
+      <Footer botUsername={botUsername} />
     </main>
   );
 }

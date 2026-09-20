@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { Course, saveCourse, ApiError } from '../lib/api';
+import { Button } from './ui/button';
+import { Field, Input, Switch, Textarea } from './ui/field';
+import { useToast } from './ui/toast';
 
 const TIER_LABELS: Record<Course['tier'], string> = {
   basic: 'Базовий',
@@ -10,92 +13,81 @@ const TIER_LABELS: Record<Course['tier'], string> = {
 };
 
 export const CourseEditor = ({ course }: { course: Course }) => {
+  const toast = useToast();
   const [form, setForm] = useState(course);
+  const [saved, setSaved] = useState(course);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  // Cheap and honest: the form is dirty when it differs from what the server
+  // last returned, so the indicator cannot drift out of sync with reality.
+  const dirty = JSON.stringify(form) !== JSON.stringify(saved);
 
   const update = <K extends keyof Course>(key: K, value: Course[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
   const onSave = async () => {
     setSaving(true);
-    setError(null);
     try {
       const updated = await saveCourse(form);
       setForm(updated);
-      setSavedAt(Date.now());
+      setSaved(updated);
+      toast(`${TIER_LABELS[updated.tier]} курс збережено`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Не вдалося зберегти');
+      toast(err instanceof ApiError ? err.message : 'Не вдалося зберегти', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="panel rounded-lg p-6">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wide text-accent">
+    <div className="panel flex flex-col rounded-xl p-6">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-mono text-xs uppercase tracking-[0.14em] text-accent">
           {TIER_LABELS[form.tier]}
         </span>
-        <label className="flex items-center gap-2 text-sm text-ink-muted">
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(e) => update('active', e.target.checked)}
-            className="accent-accent"
-          />
-          Активний
-        </label>
+        <Switch
+          checked={form.active}
+          onChange={(v) => update('active', v)}
+          label={form.active ? 'Активний' : 'Прихований'}
+        />
       </div>
 
-      <label className="block mt-4 text-sm text-ink-muted">Назва</label>
-      <input
-        value={form.title}
-        onChange={(e) => update('title', e.target.value)}
-        className="mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent"
-      />
+      <Field label="Назва" className="mt-5">
+        <Input value={form.title} onChange={(e) => update('title', e.target.value)} />
+      </Field>
 
-      <label className="block mt-4 text-sm text-ink-muted">Опис</label>
-      <textarea
-        value={form.description}
-        onChange={(e) => update('description', e.target.value)}
-        rows={3}
-        className="mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent resize-none"
-      />
+      <Field label="Опис" className="mt-4">
+        <Textarea
+          rows={4}
+          value={form.description}
+          onChange={(e) => update('description', e.target.value)}
+        />
+      </Field>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm text-ink-muted">Ціна</label>
-          <input
+      <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
+        <Field label="Ціна">
+          <Input
             type="number"
             min={0}
             value={form.price}
             onChange={(e) => update('price', Number(e.target.value))}
-            className="mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent font-mono"
+            className="font-mono"
           />
-        </div>
-        <div>
-          <label className="block text-sm text-ink-muted">Валюта</label>
-          <input
+        </Field>
+        <Field label="Валюта">
+          <Input
             value={form.currency}
             onChange={(e) => update('currency', e.target.value.toUpperCase())}
-            className="mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent font-mono"
+            className="w-24 font-mono"
           />
-        </div>
+        </Field>
       </div>
 
-      {error && <p className="mt-4 text-sm text-danger">{error}</p>}
-
-      <div className="mt-5 flex items-center gap-3">
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="rounded-md bg-accent text-bg font-medium px-5 py-2.5 disabled:opacity-50"
-        >
-          {saving ? 'Збереження...' : 'Зберегти'}
-        </button>
-        {savedAt && <span className="text-sm text-ink-muted">Збережено</span>}
+      <div className="mt-6 flex items-center gap-3">
+        <Button variant="primary" onClick={onSave} loading={saving} disabled={!dirty}>
+          Зберегти
+        </Button>
+        {dirty && <span className="text-xs text-warn">Є незбережені зміни</span>}
       </div>
     </div>
   );

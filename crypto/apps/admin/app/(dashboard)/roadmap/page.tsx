@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ApiError,
@@ -14,13 +14,32 @@ import {
 } from '../../lib/api';
 import { clearToken } from '../../lib/auth';
 import { RoadmapStageEditor } from '../../components/roadmap-stage-editor';
+import { Button } from '../../components/ui/button';
+import { Input, Switch } from '../../components/ui/field';
+import { EmptyState, Skeleton } from '../../components/ui/panel';
+import { useToast } from '../../components/ui/toast';
+import { useConfirm } from '../../components/ui/confirm';
+
+const toDraft = (stage: RoadmapStage): RoadmapStageDraft => ({
+  title: stage.title,
+  lessonsCount: stage.lessonsCount,
+  hasTest: stage.hasTest,
+  summary: stage.summary ?? '',
+  modules: stage.modules ?? [],
+  imageUrl: stage.imageUrl ?? '',
+  active: stage.active,
+});
 
 export default function RoadmapPage() {
   const router = useRouter();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [stages, setStages] = useState<RoadmapStage[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [query, setQuery] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const handleError = useCallback(
     (err: unknown) => {
@@ -29,9 +48,11 @@ export default function RoadmapPage() {
         router.replace('/login');
         return;
       }
-      setError(err instanceof ApiError ? err.message : 'Не вдалося завантажити етапи');
+      const message = err instanceof ApiError ? err.message : 'Сталася помилка';
+      setError(message);
+      toast(message, 'error');
     },
-    [router],
+    [router, toast],
   );
 
   const reload = useCallback(() => {
@@ -40,142 +61,211 @@ export default function RoadmapPage() {
 
   useEffect(reload, [reload]);
 
-  const onCreate = async (draft: RoadmapStageDraft) => {
-    await createStage(draft);
-    setCreating(false);
-    reload();
-  };
+  // Search matches themes too: with six stages the titles fit on one screen,
+  // but the module lists are where you actually lose things.
+  const visible = useMemo(() => {
+    if (!stages) return null;
+    const q = query.trim().toLowerCase();
+    if (!q) return stages;
+    return stages.filter(
+      (s) =>
+        s.title.toLowerCase().includes(q) ||
+        s.summary?.toLowerCase().includes(q) ||
+        s.modules.some((m) => m.toLowerCase().includes(q)),
+    );
+  }, [stages, query]);
 
-  const onUpdate = async (id: string, draft: RoadmapStageDraft) => {
-    await updateStage(id, draft);
-    setEditingId(null);
-    reload();
-  };
-
-  const onDelete = async (stage: RoadmapStage) => {
-    if (!confirm(`Видалити етап «${stage.title}»?`)) return;
+  const run = async (id: string | null, action: () => Promise<unknown>, message?: string) => {
+    setBusyId(id);
     try {
-      await deleteStage(stage._id);
+      await action();
       reload();
+      if (message) toast(message);
     } catch (err) {
       handleError(err);
+    } finally {
+      setBusyId(null);
     }
   };
 
-  // Swap positions with the neighbour and let the server re-sequence.
-  const move = async (index: number, delta: number) => {
+  const move = (index: number, delta: number) => {
     if (!stages) return;
     const target = index + delta;
     if (target < 0 || target >= stages.length) return;
-    try {
-      await reorderStages([
+    return run(stages[index]._id, () =>
+      reorderStages([
         { id: stages[index]._id, order: stages[target].order },
         { id: stages[target]._id, order: stages[index].order },
-      ]);
-      reload();
-    } catch (err) {
-      handleError(err);
-    }
+      ]),
+    );
   };
+
+  const duplicate = (stage: RoadmapStage) =>
+    run(
+      stage._id,
+      () => createStage({ ...toDraft(stage), title: `${stage.title} (копія)`, active: false }),
+      'Етап скопійовано — копія прихована',
+    );
+
+  const remove = async (stage: RoadmapStage) => {
+    const ok = await confirm(`Видалити етап «${stage.title}»? Дію не можна скасувати.`);
+    if (!ok) return;
+    run(stage._id, () => deleteStage(stage._id), 'Етап видалено');
+  };
+
+  const toggleActive = (stage: RoadmapStage, active: boolean) =>
+    run(
+      stage._id,
+      () => updateStage(stage._id, { ...toDraft(stage), active }),
+      active ? 'Етап показано на сайті' : 'Етап прихований',
+    );
+
+  const totalLessons = stages?.filter((s) => s.active).reduce((n, s) => n + s.lessonsCount, 0) ?? 0;
 
   return (
     <div>
-      <div className="flex items-start justify-between gap-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Дорожня карта</h1>
-          <p className="mt-1 text-sm text-ink-muted">
-            Етапи курсу — секція «Путь курса» на лендінгу. Порожній список означає, що секція
-            не показується взагалі.
-          </p>
-        </div>
-        <button
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <p className="max-w-xl text-sm text-ink-muted">
+          Етапи секції «Путь курса». Порожній список означає, що секції на лендінгу немає.
+          {stages?.length ? ` Зараз активних: ${stages.filter((s) => s.active).length}, уроків: ${totalLessons}.` : ''}
+        </p>
+        <Button
+          variant="primary"
           onClick={() => {
             setCreating(true);
             setEditingId(null);
           }}
-          className="shrink-0 rounded-md bg-accent text-bg font-medium px-5 py-2.5"
         >
           Додати етап
-        </button>
+        </Button>
       </div>
 
-      {error && <p className="mt-6 text-danger">{error}</p>}
+      {stages && stages.length > 3 && (
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Пошук за назвою або темою"
+          className="mt-6 max-w-sm"
+        />
+      )}
 
-      {!stages && !error && <p className="mt-8 text-ink-muted">Завантаження...</p>}
+      {error && <p className="mt-6 text-sm text-danger">{error}</p>}
+
+      {!stages && !error && (
+        <div className="mt-8 space-y-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-20" />
+          ))}
+        </div>
+      )}
 
       {creating && (
         <div className="mt-8">
-          <RoadmapStageEditor onSave={onCreate} onCancel={() => setCreating(false)} />
+          <RoadmapStageEditor
+            onSave={async (draft) => {
+              await createStage(draft);
+              setCreating(false);
+              reload();
+              toast('Етап створено');
+            }}
+            onCancel={() => setCreating(false)}
+          />
         </div>
       )}
 
       {stages && stages.length === 0 && !creating && (
-        <p className="mt-8 text-ink-muted">Етапів ще немає.</p>
+        <EmptyState
+          text="Етапів ще немає. Додайте перший — і секція зʼявиться на лендінгу."
+          action={
+            <Button variant="ghost" onClick={() => setCreating(true)}>
+              Додати етап
+            </Button>
+          }
+        />
       )}
 
-      {stages && stages.length > 0 && (
-        <div className="mt-8 space-y-4">
-          {stages.map((stage, index) =>
+      {visible && visible.length === 0 && stages && stages.length > 0 && (
+        <EmptyState text="Нічого не знайдено за цим запитом." />
+      )}
+
+      {visible && visible.length > 0 && (
+        <div className="mt-6 space-y-3">
+          {visible.map((stage) =>
             editingId === stage._id ? (
               <RoadmapStageEditor
                 key={stage._id}
                 stage={stage}
-                onSave={(draft) => onUpdate(stage._id, draft)}
+                onSave={async (draft) => {
+                  await updateStage(stage._id, draft);
+                  setEditingId(null);
+                  reload();
+                  toast('Етап збережено');
+                }}
                 onCancel={() => setEditingId(null)}
               />
             ) : (
-              <div key={stage._id} className="panel rounded-lg p-5 flex items-center gap-5">
-                <span className="font-mono text-sm text-accent w-14 shrink-0">
-                  Етап {stage.order}
+              <div
+                key={stage._id}
+                className={`panel flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl px-5 py-4 transition-opacity ${
+                  busyId === stage._id ? 'opacity-50' : ''
+                } ${stage.active ? '' : 'border-dashed'}`}
+              >
+                <span className="w-16 shrink-0 font-mono text-sm text-accent">
+                  {String(stage.order).padStart(2, '0')}
                 </span>
 
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    {stage.title}
-                    {!stage.active && (
-                      <span className="ml-2 text-xs text-ink-muted">(прихований)</span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 text-sm text-ink-muted">
+                <div className="min-w-[12rem] flex-1">
+                  <p className="font-medium">{stage.title}</p>
+                  <p className="mt-0.5 text-xs text-ink-muted">
                     {stage.lessonsCount} уроків
                     {stage.hasTest ? ' · тестування' : ''}
-                    {stage.modules.length ? ` · ${stage.modules.length} тем` : ''}
-                    {stage.imageUrl ? ` · ${stage.imageUrl}` : ' · без зображення'}
+                    {stage.modules.length ? ` · ${stage.modules.length} тем` : ' · тем немає'}
+                    {stage.imageUrl ? '' : ' · без зображення'}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => move(index, -1)}
-                    disabled={index === 0}
-                    className="px-2 py-1 text-ink-muted hover:text-ink disabled:opacity-30"
+                <Switch
+                  checked={stage.active}
+                  onChange={(v) => toggleActive(stage, v)}
+                  label={stage.active ? 'На сайті' : 'Прихований'}
+                />
+
+                <div className="ml-auto flex items-center gap-1">
+                  <Button
+                    variant="quiet"
+                    size="sm"
+                    onClick={() => move(stages!.indexOf(stage), -1)}
+                    disabled={stages!.indexOf(stage) === 0 || !!query}
                     aria-label="Вгору"
                   >
                     ↑
-                  </button>
-                  <button
-                    onClick={() => move(index, 1)}
-                    disabled={index === stages.length - 1}
-                    className="px-2 py-1 text-ink-muted hover:text-ink disabled:opacity-30"
+                  </Button>
+                  <Button
+                    variant="quiet"
+                    size="sm"
+                    onClick={() => move(stages!.indexOf(stage), 1)}
+                    disabled={stages!.indexOf(stage) === stages!.length - 1 || !!query}
                     aria-label="Вниз"
                   >
                     ↓
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-2"
                     onClick={() => {
                       setEditingId(stage._id);
                       setCreating(false);
                     }}
-                    className="ml-2 rounded-md border border-ink/15 px-3 py-1.5 text-sm hover:border-accent"
                   >
                     Редагувати
-                  </button>
-                  <button
-                    onClick={() => onDelete(stage)}
-                    className="rounded-md border border-ink/15 px-3 py-1.5 text-sm text-ink-muted hover:text-danger hover:border-danger/40"
-                  >
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => duplicate(stage)}>
+                    Копія
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => remove(stage)}>
                     Видалити
-                  </button>
+                  </Button>
                 </div>
               </div>
             ),

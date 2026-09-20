@@ -83,21 +83,18 @@ export default function ChannelBotPage() {
   }
 
   if (!state) {
-    return <p className="text-ink-muted">Завантаження...</p>;
+    return <p className="text-sm text-ink-muted">Завантаження...</p>;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Канал-бот</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Автопостинг у Telegram-канал: режим, чернетки та історія публікацій.
-        </p>
-      </div>
+      <p className="max-w-xl text-sm text-ink-muted">
+        Автопостинг у Telegram-канал: режим, чернетки та історія публікацій.
+      </p>
 
-      {error && <p className="text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="panel rounded-lg p-6">
+      <div className="panel rounded-xl p-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div>
             <span className="block text-ink-muted">Режим</span>
@@ -140,7 +137,7 @@ export default function ChannelBotPage() {
       </div>
 
       {state.pendingDraft && (
-        <div className="panel rounded-lg p-6">
+        <div className="panel rounded-xl p-6">
           <h2 className="text-lg font-semibold">Чернетка на розгляді</h2>
           <p className="mt-3 whitespace-pre-wrap text-sm text-ink/90 rounded-md bg-bg border border-ink/10 p-4">
             {state.pendingDraft}
@@ -149,14 +146,14 @@ export default function ChannelBotPage() {
             <button
               onClick={() => run('publish', publishDraft)}
               disabled={busy !== null}
-              className="rounded-md bg-accent text-bg font-medium px-4 py-2 disabled:opacity-50"
+              className="rounded-md bg-accent px-4 py-2 font-medium text-bg transition-colors hover:bg-accent/90 disabled:opacity-50"
             >
               {busy === 'publish' ? '...' : '✅ Опублікувати'}
             </button>
             <button
               onClick={() => run('regenerate', regenerateDraft)}
               disabled={busy !== null}
-              className="rounded-md border border-ink/15 text-ink-muted hover:text-ink px-4 py-2 disabled:opacity-50"
+              className="rounded-md border border-ink/15 px-4 py-2 text-ink-muted transition-colors hover:border-accent/50 hover:text-accent disabled:opacity-50"
             >
               {busy === 'regenerate' ? '...' : '🔁 Перегенерувати'}
             </button>
@@ -171,7 +168,7 @@ export default function ChannelBotPage() {
         </div>
       )}
 
-      <div className="panel rounded-lg p-6">
+      <div className="panel rounded-xl p-6">
         <h2 className="text-lg font-semibold">Історія</h2>
         {!history || history.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">Історія порожня.</p>

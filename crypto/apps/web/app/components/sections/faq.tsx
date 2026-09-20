@@ -10,7 +10,7 @@ export const Faq = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="py-24 md:py-32">
+    <section id="faq" className="scroll-mt-24 py-24 md:py-32">
       <div className="mx-auto max-w-3xl px-6 md:px-8">
         <motion.h2
           initial="hidden"

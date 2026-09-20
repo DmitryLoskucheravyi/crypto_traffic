@@ -4,21 +4,76 @@
 
 @layer base {
   :root {
+    /* Same palette as the landing: the admin shows the product's own colours,
+       so what the owner edits here looks like what visitors will see. The old
+       gold accent predated the terminal repaint of the site. */
     --bg: 240 8% 5%;
     --surface: 252 11% 9%;
+    --raised: 252 10% 12%;
     --ink: 40 26% 93%;
     --ink-muted: 32 7% 63%;
-    --accent: 41 54% 54%;
+    --accent: 162 66% 52%;
+    --danger: 6 70% 58%;
+    --warn: 38 82% 58%;
   }
 
   body {
     @apply bg-bg text-ink font-sans antialiased;
   }
+
+  /* The native chrome is replaced here for the same reason as on the landing:
+     a white system scrollbar on a near-black panel reads as a bug. */
+  html {
+    scrollbar-color: hsl(var(--ink) / 0.2) transparent;
+    scrollbar-width: thin;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--ink) / 0.16);
+    border: 3px solid hsl(var(--bg));
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent) / 0.5);
+  }
+
+  ::selection {
+    background: hsl(var(--accent) / 0.3);
+  }
+
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 1px solid hsl(var(--accent));
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
 }
 
 @layer utilities {
   .panel {
-    background: linear-gradient(180deg, hsl(var(--surface) / 0.9), hsl(var(--surface) / 0.6));
-    border: 1px solid hsl(var(--ink) / 0.1);
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--ink) / 0.09);
+  }
+
+  .panel-raised {
+    background: hsl(var(--raised));
+    border: 1px solid hsl(var(--ink) / 0.12);
+  }
+
+  .label {
+    @apply block font-mono text-[11px] uppercase tracking-[0.14em] text-ink-muted;
   }
 }

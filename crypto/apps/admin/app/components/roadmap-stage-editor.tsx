@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { RoadmapStage, RoadmapStageDraft } from '../lib/api';
+import { Button } from './ui/button';
+import { Field, Input, Select, Switch, Textarea } from './ui/field';
 
 // The six generated assets that live in apps/web/public. A dropdown rather
 // than a free URL field: these are the only images the section is designed
@@ -77,76 +79,63 @@ export const RoadmapStageEditor = ({ stage, onSave, onCancel }: Props) => {
     }
   };
 
-  const field = 'mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent';
-
   return (
-    <div className="panel rounded-lg p-6">
+    <div className="panel-raised rounded-xl p-6">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs uppercase tracking-wide text-accent">
+        <span className="font-mono text-xs uppercase tracking-[0.14em] text-accent">
           {stage ? `Етап ${stage.order}` : 'Новий етап'}
         </span>
-        <label className="flex items-center gap-2 text-sm text-ink-muted">
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(e) => update('active', e.target.checked)}
-            className="accent-accent"
-          />
-          Активний
-        </label>
+        <Switch
+          checked={form.active}
+          onChange={(v) => update('active', v)}
+          label={form.active ? 'На сайті' : 'Прихований'}
+        />
       </div>
 
-      <label className="block mt-4 text-sm text-ink-muted">Назва</label>
-      <input value={form.title} onChange={(e) => update('title', e.target.value)} className={field} />
+      <Field label="Назва" className="mt-5">
+        <Input value={form.title} onChange={(e) => update('title', e.target.value)} />
+      </Field>
 
-      <label className="block mt-4 text-sm text-ink-muted">Короткий опис (необов&apos;язково)</label>
-      <textarea
-        value={form.summary}
-        onChange={(e) => update('summary', e.target.value)}
-        rows={2}
-        className={`${field} resize-none`}
-      />
+      <Field label="Короткий опис" hint="Необовʼязково — один-два рядки під заголовком." className="mt-4">
+        <Textarea
+          value={form.summary}
+          onChange={(e) => update('summary', e.target.value)}
+          rows={2}
+        />
+      </Field>
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm text-ink-muted">Кількість уроків</label>
-          <input
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <Field label="Кількість уроків">
+          <Input
             type="number"
             min={0}
             value={form.lessonsCount}
             onChange={(e) => update('lessonsCount', Number(e.target.value))}
-            className={`${field} font-mono`}
+            className="font-mono"
           />
-        </div>
-        <div>
-          <label className="block text-sm text-ink-muted">Зображення</label>
-          <select
-            value={form.imageUrl}
-            onChange={(e) => update('imageUrl', e.target.value)}
-            className={field}
-          >
+        </Field>
+        <Field label="Зображення">
+          <Select value={form.imageUrl} onChange={(e) => update('imageUrl', e.target.value)}>
             {IMAGE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Field>
       </div>
 
-      <label className="flex items-center gap-2 mt-4 text-sm text-ink-muted">
-        <input
-          type="checkbox"
+      <div className="mt-4">
+        <Switch
           checked={form.hasTest}
-          onChange={(e) => update('hasTest', e.target.checked)}
-          className="accent-accent"
+          onChange={(v) => update('hasTest', v)}
+          label="Є тестування"
         />
-        Є тестування
-      </label>
+      </div>
 
-      <label className="block mt-5 text-sm text-ink-muted">Теми всередині етапу</label>
-      <div className="mt-1 flex gap-2">
-        <input
+      <span className="label mt-6 block">Теми всередині етапу</span>
+      <div className="mt-1.5 flex gap-2">
+        <Input
           value={moduleInput}
           onChange={(e) => setModuleInput(e.target.value)}
           onKeyDown={(e) => {
@@ -155,16 +144,11 @@ export const RoadmapStageEditor = ({ stage, onSave, onCancel }: Props) => {
               addModule();
             }
           }}
-          placeholder="Назва теми"
-          className={`${field} mt-0`}
+          placeholder="Назва теми, Enter — додати"
         />
-        <button
-          type="button"
-          onClick={addModule}
-          className="shrink-0 rounded-md border border-ink/15 px-4 text-sm hover:border-accent"
-        >
+        <Button variant="ghost" size="sm" onClick={addModule} className="shrink-0">
           Додати
-        </button>
+        </Button>
       </div>
 
       {form.modules.length > 0 && (
@@ -206,17 +190,13 @@ export const RoadmapStageEditor = ({ stage, onSave, onCancel }: Props) => {
 
       {error && <p className="mt-4 text-sm text-danger">{error}</p>}
 
-      <div className="mt-5 flex items-center gap-3">
-        <button
-          onClick={submit}
-          disabled={saving}
-          className="rounded-md bg-accent text-bg font-medium px-5 py-2.5 disabled:opacity-50"
-        >
-          {saving ? 'Збереження...' : 'Зберегти'}
-        </button>
-        <button onClick={onCancel} className="text-sm text-ink-muted hover:text-ink">
+      <div className="mt-6 flex items-center gap-3">
+        <Button variant="primary" onClick={submit} loading={saving}>
+          Зберегти
+        </Button>
+        <Button variant="quiet" onClick={onCancel}>
           Скасувати
-        </button>
+        </Button>
       </div>
     </div>
   );

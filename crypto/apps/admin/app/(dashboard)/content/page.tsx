@@ -4,9 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ApiError, SiteContent, fetchSiteContent, saveSiteContent } from '../../lib/api';
 import { clearToken } from '../../lib/auth';
+import { Button } from '../../components/ui/button';
+import { Switch } from '../../components/ui/field';
+import { Skeleton } from '../../components/ui/panel';
+import { useToast } from '../../components/ui/toast';
 
+// Shared control styling as a string rather than a wrapper component: this
+// screen is one dense form, and a component per input made the markup harder
+// to scan than the class does.
 const FIELD =
-  'mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent';
+  'mt-1.5 w-full rounded-md border border-ink/15 bg-bg px-3 py-2 text-sm transition-colors duration-150 placeholder:text-ink-muted/60 hover:border-ink/25 focus:border-accent disabled:opacity-40';
 
 const TIERS = [
   { value: 'basic', label: 'Базовий' },
@@ -24,7 +31,6 @@ const Block = ({
   onToggle,
   onSave,
   saving,
-  savedAt,
   error,
   children,
 }: {
@@ -34,40 +40,28 @@ const Block = ({
   onToggle: (value: boolean) => void;
   onSave: () => void;
   saving: boolean;
-  savedAt: number | null;
   error: string | null;
   children: React.ReactNode;
 }) => (
-  <section className="panel rounded-lg p-6">
-    <div className="flex items-start justify-between gap-6">
+  <section className={`panel rounded-xl ${enabled ? '' : 'border-dashed'}`}>
+    <header className="flex items-start justify-between gap-6 border-b border-ink/8 px-6 py-4">
       <div>
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {hint && <p className="mt-1 text-sm text-ink-muted">{hint}</p>}
+        <h2 className="font-medium">{title}</h2>
+        {hint && <p className="mt-1 max-w-xl text-sm text-ink-muted">{hint}</p>}
       </div>
-      <label className="flex shrink-0 items-center gap-2 text-sm text-ink-muted">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={(e) => onToggle(e.target.checked)}
-          className="accent-accent"
-        />
-        Показувати на сайті
-      </label>
-    </div>
+      <div className="shrink-0">
+        <Switch checked={enabled} onChange={onToggle} label={enabled ? 'На сайті' : 'Приховано'} />
+      </div>
+    </header>
 
-    <div className="mt-5">{children}</div>
+    <div className="px-6 py-5">{children}</div>
 
-    {error && <p className="mt-4 text-sm text-danger">{error}</p>}
+    {error && <p className="px-6 text-sm text-danger">{error}</p>}
 
-    <div className="mt-5 flex items-center gap-3">
-      <button
-        onClick={onSave}
-        disabled={saving}
-        className="rounded-md bg-accent text-bg font-medium px-5 py-2.5 disabled:opacity-50"
-      >
-        {saving ? 'Збереження...' : 'Зберегти'}
-      </button>
-      {savedAt && <span className="text-sm text-ink-muted">Збережено</span>}
+    <div className="px-6 pb-5">
+      <Button variant="primary" onClick={onSave} loading={saving}>
+        Зберегти
+      </Button>
     </div>
   </section>
 );
@@ -76,8 +70,8 @@ export default function ContentPage() {
   const router = useRouter();
   const [data, setData] = useState<SiteContent | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const toast = useToast();
   const [savingKey, setSavingKey] = useState<string | null>(null);
-  const [savedKey, setSavedKey] = useState<{ key: string; at: number } | null>(null);
   const [blockError, setBlockError] = useState<{ key: string; message: string } | null>(null);
 
   const handleError = useCallback(
@@ -98,8 +92,17 @@ export default function ContentPage() {
     fetchSiteContent().then(setData).catch(handleError);
   }, [handleError]);
 
-  if (loadError) return <p className="text-danger">{loadError}</p>;
-  if (!data) return <p className="text-ink-muted">Завантаження...</p>;
+  if (loadError) return <p className="text-sm text-danger">{loadError}</p>;
+
+  if (!data) {
+    return (
+      <div className="space-y-6">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-48" />
+        ))}
+      </div>
+    );
+  }
 
   const patch = <K extends keyof SiteContent>(key: K, value: Partial<SiteContent[K]>) =>
     setData((d) => (d ? { ...d, [key]: { ...d[key], ...value } } : d));
@@ -115,7 +118,7 @@ export default function ContentPage() {
     try {
       const updated = await saveSiteContent({ [key]: data[key] } as Partial<SiteContent>);
       setData(updated);
-      setSavedKey({ key, at: Date.now() });
+      toast('Збережено');
     } catch (err) {
       handleError(err, key);
     } finally {
@@ -125,7 +128,6 @@ export default function ContentPage() {
 
   const blockProps = (key: keyof SiteContent) => ({
     saving: savingKey === key,
-    savedAt: savedKey?.key === key ? savedKey.at : null,
     error: blockError?.key === key ? blockError.message : null,
   });
 
@@ -133,13 +135,10 @@ export default function ContentPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">Контент сайту</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Блоки лендінгу, які не є курсами. Вимкнений або незаповнений блок на сайті просто
-          не показується.
-        </p>
-      </div>
+      <p className="max-w-xl text-sm text-ink-muted">
+        Блоки лендінгу, які не є курсами. Вимкнений або незаповнений блок на сайті просто не
+        показується.
+      </p>
 
       <Block
         title="Калькулятор"
@@ -230,15 +229,9 @@ export default function ContentPage() {
 
             return (
               <div key={tier.value} className="flex items-center gap-3">
-                <label className="flex w-40 items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={!!row}
-                    onChange={(e) => setRow(e.target.checked ? {} : null)}
-                    className="accent-accent"
-                  />
-                  {tier.label}
-                </label>
+                <div className="w-44 shrink-0">
+                  <Switch checked={!!row} onChange={(on) => setRow(on ? {} : null)} label={tier.label} />
+                </div>
                 <input
                   type="number"
                   disabled={!row}
@@ -375,16 +368,18 @@ export default function ContentPage() {
           ))}
         </div>
 
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-3"
           onClick={() =>
             patch('comparison', {
               rows: [...comparison.rows, { label: '', left: '', right: '' }],
             })
           }
-          className="mt-3 rounded-md border border-ink/15 px-4 py-2 text-sm hover:border-accent"
         >
           Додати рядок
-        </button>
+        </Button>
       </Block>
 
       <Block
@@ -432,15 +427,13 @@ export default function ContentPage() {
           </div>
         </div>
 
-        <label className="mt-4 flex items-center gap-2 text-sm text-ink-muted">
-          <input
-            type="checkbox"
+        <div className="mt-4">
+          <Switch
             checked={lessonPreview.isIllustrative}
-            onChange={(e) => patch('lessonPreview', { isIllustrative: e.target.checked })}
-            className="accent-accent"
+            onChange={(v) => patch('lessonPreview', { isIllustrative: v })}
+            label="Це ілюстрація, а не справжній кадр"
           />
-          Це ілюстрація, а не справжній кадр
-        </label>
+        </div>
       </Block>
 
       <Block

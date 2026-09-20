@@ -47,7 +47,11 @@ export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
   if (!stages.length) return null;
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden py-24 md:py-32">
+    <section
+      id="roadmap"
+      ref={sectionRef}
+      className="relative scroll-mt-24 overflow-hidden py-24 md:py-32"
+    >
       <div className="mx-auto max-w-container px-6 md:px-8">
         <motion.div
           initial="hidden"

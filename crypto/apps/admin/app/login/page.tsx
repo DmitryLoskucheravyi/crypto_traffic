@@ -4,6 +4,8 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, ApiError } from '../lib/api';
 import { setToken } from '../lib/auth';
+import { Button } from '../components/ui/button';
+import { Field, Input } from '../components/ui/field';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,37 +31,34 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
-      <form onSubmit={onSubmit} className="panel rounded-lg p-8 w-full max-w-sm">
-        <h1 className="text-xl font-semibold">Вхід в адмінку</h1>
-        <p className="mt-1 text-sm text-ink-muted">Крипто курси</p>
+      <form onSubmit={onSubmit} className="panel w-full max-w-sm rounded-xl p-8">
+        <div className="flex items-center gap-2.5">
+          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+          <span className="font-mono text-xs uppercase tracking-[0.18em] text-ink-muted">
+            Адмінка
+          </span>
+        </div>
 
-        <label className="block mt-6 text-sm text-ink-muted">Email</label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent"
-        />
+        <h1 className="mt-5 text-xl font-medium">Вхід</h1>
 
-        <label className="block mt-4 text-sm text-ink-muted">Пароль</label>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 w-full rounded-md bg-bg border border-ink/15 px-3 py-2 outline-none focus:border-accent"
-        />
+        <Field label="Email" className="mt-6">
+          <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        </Field>
+
+        <Field label="Пароль" className="mt-4">
+          <Input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
 
         {error && <p className="mt-4 text-sm text-danger">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-6 w-full rounded-md bg-accent text-bg font-medium py-2.5 disabled:opacity-50"
-        >
-          {loading ? 'Вхід...' : 'Увійти'}
-        </button>
+        <Button type="submit" variant="primary" loading={loading} className="mt-6 w-full">
+          Увійти
+        </Button>
       </form>
     </main>
   );
