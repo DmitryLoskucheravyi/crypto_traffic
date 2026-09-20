@@ -22,6 +22,70 @@
     @apply bg-bg text-ink font-sans antialiased;
   }
 
+  /* --- Native browser chrome, replaced with the project's own --- */
+
+  /* Scrollbar. Firefox gets the two-colour form, WebKit the full one. */
+  html {
+    scrollbar-color: hsl(var(--ink) / 0.2) transparent;
+    scrollbar-width: thin;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--bg));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--ink) / 0.18);
+    border: 3px solid hsl(var(--bg));
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent) / 0.55);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: hsl(var(--bg));
+  }
+
+  /* Selection: the default is the OS blue, which is the one colour this
+     palette never uses. */
+  ::selection {
+    background: hsl(var(--accent) / 0.3);
+    color: hsl(var(--ink));
+  }
+
+  /* Focus. The ring is replaced, never removed: keyboard users still need to
+     see where they are, and :focus-visible keeps it off mouse clicks. */
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 1px solid hsl(var(--accent));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* The range thumb draws its own focus state, so the ring would double up. */
+  input[type='range']:focus-visible {
+    outline: none;
+  }
+
+  input[type='range']:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.25), 0 0 10px hsl(var(--accent) / 0.6);
+  }
+
+  input[type='range']:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.25), 0 0 10px hsl(var(--accent) / 0.6);
+  }
+
   /* Heading ladder — the page steps down one rung per section instead of
      falling off a cliff after the hero, and steps back up for the closing ask:
        hero 4.25rem · bento 3rem · how-it-works 2.25rem · roadmap 2.125rem ·
@@ -41,7 +105,7 @@
 
 @layer utilities {
   .glass-panel {
-    background: linear-gradient(180deg, hsl(var(--surface) / 0.7), hsl(var(--surface) / 0.4));
+    background: linear-gradient(180deg, hsl(var(--surface) / 0.97), hsl(var(--surface) / 0.92));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid hsl(var(--ink) / 0.08);
@@ -71,13 +135,13 @@
 
   /* Graph-paper grid — the hero's full-bleed backdrop, reused behind the
      market chart so the two chart moments share one surface. */
-  /* Film grain over the flat background. Fixed, never interactive, and
-     deliberately faint — it adds depth to empty sections without touching
-     contrast anywhere. */
+  /* Film grain on the background, not over the page. z-index -1 puts it above
+     the body's fill but under every panel and every line of text, so it gives
+     the empty areas depth without speckling the content sitting on top. */
   .grain-overlay {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: -1;
     pointer-events: none;
     background-image: url('/grain.png');
     background-repeat: repeat;

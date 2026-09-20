@@ -30,7 +30,7 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
   const hasModules = stage.modules.length > 0;
 
   return (
-    <div className="group relative rounded-xl border border-ink/10 bg-surface/90 p-6 backdrop-blur-md transition-all duration-standard ease-premium hover:-translate-y-0.5 hover:border-accent/30">
+    <div className="group relative rounded-xl border border-ink/10 bg-surface/95 p-6 backdrop-blur-md transition-all duration-standard ease-premium hover:-translate-y-0.5 hover:border-accent/30">
       {stage.imageUrl && (
         <Image
           src={stage.imageUrl}

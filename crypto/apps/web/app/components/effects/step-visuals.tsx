@@ -20,7 +20,7 @@ const useStepPlay = () => {
 // One frame around all three so they read as three views of the same terminal
 // rather than three unrelated widgets.
 const Frame = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="relative overflow-hidden rounded-xl border border-ink/10 bg-bg/40 p-5 md:p-6">
+  <div className="relative overflow-hidden rounded-xl border border-ink/10 bg-bg/90 p-5 md:p-6">
     <div className="flex items-center gap-1.5 pb-4">
       <span className="h-1.5 w-1.5 rounded-full bg-ink/20" />
       <span className="h-1.5 w-1.5 rounded-full bg-ink/20" />
@@ -245,7 +245,7 @@ export const AccessDemo = () => {
                       }
                     : {}
                 }
-                className="flex items-center gap-3 rounded-md border border-ink/10 bg-surface/60 px-3 py-2"
+                className="flex items-center gap-3 rounded-md border border-ink/10 bg-surface/95 px-3 py-2"
               >
                 <span className="h-6 w-4 shrink-0 rounded-sm border border-accent/40 bg-accent/10" />
                 <span className="flex-1">

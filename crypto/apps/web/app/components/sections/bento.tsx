@@ -360,7 +360,7 @@ export const Bento = () => {
                       className="pointer-events-none absolute inset-0"
                       style={{ backgroundImage: CARD_SCRIM }}
                     />
-                    <span className="absolute left-7 top-7 inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-surface/70 text-accent backdrop-blur">
+                    <span className="absolute left-7 top-7 inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-surface/95 text-accent backdrop-blur">
                       <Icon size={20} />
                     </span>
                     <div className="absolute inset-x-0 bottom-0 p-7">
@@ -384,7 +384,7 @@ export const Bento = () => {
               type="button"
               aria-label={CELLS[next].title}
               onClick={() => scrollToIndex(absRef.current + 1)}
-              className="absolute right-8 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface/80 text-ink opacity-0 backdrop-blur transition-opacity duration-standard ease-premium hover:text-accent focus-visible:opacity-100 group-hover/track:opacity-100 md:right-[calc(4rem_+_max(0px,(100vw_-_1280px)/2))]"
+              className="absolute right-8 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface/95 text-ink opacity-0 backdrop-blur transition-opacity duration-standard ease-premium hover:text-accent focus-visible:opacity-100 group-hover/track:opacity-100 md:right-[calc(4rem_+_max(0px,(100vw_-_1280px)/2))]"
             >
               <CtaArrow size={20} />
             </button>

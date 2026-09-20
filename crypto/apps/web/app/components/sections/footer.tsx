@@ -9,7 +9,7 @@ export const Footer = () => (
           alt=""
           width={20}
           height={20}
-          className="rounded-full transition-transform duration-standard ease-premium group-hover:rotate-12"
+          className="transition-transform duration-standard ease-premium group-hover:rotate-12"
         />
         <span className="font-mono text-sm text-ink-muted">крипто курсы</span>
       </div>

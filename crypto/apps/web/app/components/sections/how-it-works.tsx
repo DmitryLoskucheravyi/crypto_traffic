@@ -120,7 +120,7 @@ export const HowItWorks = ({ courses = [] }: { courses?: Course[] }) => {
               <div className="mx-auto max-w-container px-6 md:px-8 lg:pl-20">
                 {/* Light base under the glass — just enough to keep text legible
                     over the card below, the blur does the rest. */}
-                <div className="rounded-2xl bg-bg/35 shadow-[0_24px_70px_-28px_hsl(var(--bg))]">
+                <div className="rounded-2xl bg-bg/90 shadow-[0_24px_70px_-28px_hsl(var(--bg))]">
                   <div
                     className="glass-panel relative flex min-h-[44vh] flex-col overflow-hidden rounded-2xl px-8 py-9 md:px-12 md:py-11"
                     style={{

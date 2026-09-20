@@ -121,7 +121,7 @@ const CourseCard = ({
       }`}
     >
       {featured && (
-        <span className="absolute right-4 top-4 z-10 rounded-full border border-accent/40 bg-bg/70 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-accent backdrop-blur">
+        <span className="absolute right-4 top-4 z-10 rounded-full border border-accent/40 bg-bg/90 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-accent backdrop-blur">
           {content.courses.popular}
         </span>
       )}

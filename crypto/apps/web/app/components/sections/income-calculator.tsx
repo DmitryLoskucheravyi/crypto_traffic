@@ -6,6 +6,7 @@ import { content } from '../../lib/content';
 import { Course, SiteContent } from '../../lib/api';
 import { fadeUp } from '../../lib/motion';
 import { CountUp } from '../ui/count-up';
+import { SelectField } from '../ui/select-field';
 
 type Calculator = NonNullable<SiteContent['calculator']>;
 
@@ -63,7 +64,7 @@ export const IncomeCalculator = ({
           <p className="mt-3 max-w-xl text-ink-muted">{content.calculator.sub}</p>
         </motion.div>
 
-        <div className="mt-12 grid gap-8 rounded-2xl border border-ink/10 bg-surface/60 p-6 md:grid-cols-2 md:gap-12 md:p-10">
+        <div className="mt-12 grid gap-8 rounded-2xl border border-ink/10 bg-surface/95 p-6 md:grid-cols-2 md:gap-12 md:p-10">
           <div>
             <label htmlFor="calc-amount" className="block text-sm text-ink-muted">
               {content.calculator.amountLabel}
@@ -89,21 +90,17 @@ export const IncomeCalculator = ({
               <span>{money(calculator.amountMax, calculator.currency)}</span>
             </div>
 
-            <label htmlFor="calc-tier" className="mt-8 block text-sm text-ink-muted">
+            <span id="calc-tier-label" className="mt-8 block text-sm text-ink-muted">
               {content.calculator.tierLabel}
-            </label>
-            <select
-              id="calc-tier"
-              value={selected.tier}
-              onChange={(e) => setTier(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-ink/15 bg-bg px-4 py-3 outline-none transition-colors duration-quick focus:border-accent"
-            >
-              {tiers.map((t) => (
-                <option key={t.tier} value={t.tier}>
-                  {courseTitle(t.tier)}
-                </option>
-              ))}
-            </select>
+            </span>
+            <div className="mt-2">
+              <SelectField
+                labelId="calc-tier-label"
+                value={selected.tier}
+                onChange={setTier}
+                options={tiers.map((t) => ({ value: t.tier, label: courseTitle(t.tier) }))}
+              />
+            </div>
           </div>
 
           <div className="flex flex-col justify-center border-t border-ink/10 pt-8 md:border-l md:border-t-0 md:pl-12 md:pt-0">

@@ -30,7 +30,7 @@ export const Comparison = ({ comparison }: { comparison: Comparison | null }) =>
         </motion.div>
 
         <div className="mt-12 overflow-hidden rounded-2xl border border-ink/10">
-          <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.2fr)] border-b border-ink/10 bg-surface/60 md:grid">
+          <div className="hidden grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.2fr)] border-b border-ink/10 bg-surface/95 md:grid">
             <span className="px-6 py-4 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted" />
             <span className="px-6 py-4 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted">
               {comparison.leftTitle}

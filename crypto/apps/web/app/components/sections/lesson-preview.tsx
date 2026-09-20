@@ -58,7 +58,7 @@ export const LessonPreview = ({ preview }: { preview: Preview | null }) => {
                     className="h-auto w-full object-cover"
                   />
                   {preview.isIllustrative && (
-                    <span className="absolute bottom-3 right-3 rounded bg-bg/80 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted backdrop-blur-sm">
+                    <span className="absolute bottom-3 right-3 rounded bg-bg/90 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-muted backdrop-blur-sm">
                       {content.lessonPreview.illustrativeBadge}
                     </span>
                   )}

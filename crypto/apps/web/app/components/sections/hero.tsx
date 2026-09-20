@@ -17,7 +17,7 @@ export const Hero = ({ botUsername }: { botUsername: string }) => {
 
       <div className="relative max-w-container mx-auto px-6 md:px-8">
         <nav className="flex items-center gap-2.5 pt-8">
-          <img src="/logo-mark.png" alt="" width={28} height={28} className="rounded-full" />
+          <img src="/logo-mark.png" alt="" width={28} height={28} />
           <span className="font-mono text-sm tracking-wide text-ink-muted">крипто курсы</span>
         </nav>
 
