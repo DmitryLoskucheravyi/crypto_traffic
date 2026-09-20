@@ -1,6 +1,10 @@
 import { Hero } from './components/sections/hero';
+import { TrustStrip } from './components/sections/trust-strip';
+import { Bento } from './components/sections/bento';
 import { HowItWorks } from './components/sections/how-it-works';
+import { MarketChart } from './components/sections/market-chart';
 import { Courses } from './components/sections/courses';
+import { Faq } from './components/sections/faq';
 import { FinalCta } from './components/sections/final-cta';
 import { Footer } from './components/sections/footer';
 import { getBotUsername, getCourses } from './lib/api';
@@ -17,8 +21,12 @@ export default async function Page() {
   return (
     <main>
       <Hero botUsername={botUsername} />
-      <HowItWorks />
+      <TrustStrip />
+      <Bento />
+      <HowItWorks courses={courses} />
+      <MarketChart />
       <Courses courses={courses} botUsername={botUsername} />
+      <Faq />
       <FinalCta botUsername={botUsername} />
       <Footer />
     </main>

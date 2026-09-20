@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Крипто курси — навчання торгівлі криптовалютою';
+export const alt = 'Крипто курсы — обучение торговле криптовалютой';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -22,7 +22,7 @@ export default function Image() {
         }}
       >
         <div style={{ display: 'flex', fontSize: 28, color: '#A8A29B', letterSpacing: 4 }}>
-          КРИПТО КУРСИ
+          КРИПТО КУРСЫ
         </div>
         <div
           style={{
@@ -35,10 +35,10 @@ export default function Image() {
             maxWidth: 900,
           }}
         >
-          Базовий · Середній · Просунутий
+          Базовый · Средний · Продвинутый
         </div>
         <div style={{ display: 'flex', marginTop: 32, fontSize: 30, color: '#C9A24B' }}>
-          Купівля через Telegram-бота
+          Покупка через Telegram-бота
         </div>
       </div>
     ),

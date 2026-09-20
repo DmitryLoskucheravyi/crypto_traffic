@@ -1,7 +1,12 @@
-export { LogoMark } from './logo-mark';
 export { CtaArrow } from './cta-arrow';
 export { TelegramMark } from './telegram-mark';
 export { StepSelect } from './step-select';
 export { StepPrice } from './step-price';
 export { StepAccess } from './step-access';
 export { TierCheck } from './tier-check';
+export { ChartPulse } from './chart-pulse';
+export { Community } from './community';
+export { SupportShield } from './support-shield';
+export { RefreshCycle } from './refresh-cycle';
+export { TogglePlus } from './toggle-plus';
+export { MaterialsStack } from './materials-stack';
