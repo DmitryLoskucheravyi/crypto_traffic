@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
 import { StateService } from '../state/state.service';
 import { PostingService } from '../posting/posting.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,7 +9,7 @@ const DEFAULT_HISTORY_LIMIT = 20;
 const MAX_HISTORY_LIMIT = 100;
 
 @Controller('api')
-@UseGuards(AuthGuard)
+@UseGuards(JwtAuthGuard)
 export class AdminController {
   constructor(
     private readonly stateService: StateService,

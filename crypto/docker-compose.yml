@@ -51,6 +51,7 @@ services:
       dockerfile: apps/admin/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: "http://localhost:${API_PORT}"
+        NEXT_PUBLIC_BOT_API_URL: "http://localhost:${BOT_PORT}"
     restart: unless-stopped
     environment:
       PORT: ${ADMIN_PORT}
@@ -58,6 +59,21 @@ services:
       - "127.0.0.1:${ADMIN_PORT}:${ADMIN_PORT}"
     depends_on:
       - api
+      - bot
+    networks:
+      - crypto-net
+
+  bot:
+    build:
+      context: .
+      dockerfile: apps/bot/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${BOT_PORT}:${BOT_PORT}"
+    volumes:
+      - bot-data:/app/prisma
     networks:
       - crypto-net
 
@@ -67,3 +83,4 @@ networks:
 
 volumes:
   mongo-data:
+  bot-data:

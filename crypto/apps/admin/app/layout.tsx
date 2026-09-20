@@ -4,8 +4,8 @@ import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Адмінка — Крипто курси',
-  description: 'Керування курсами та цінами.',
+  title: 'Крипто — Адмінка',
+  description: 'Керування курсами, цінами та Telegram-каналом.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

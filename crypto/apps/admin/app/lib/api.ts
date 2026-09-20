@@ -1,6 +1,7 @@
 import { getToken } from './auth';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3031';
+const BOT_API_BASE = process.env.NEXT_PUBLIC_BOT_API_URL ?? 'http://localhost:3033';
 
 export type Course = {
   tier: 'basic' | 'medium' | 'advanced';
@@ -11,6 +12,29 @@ export type Course = {
   active: boolean;
 };
 
+export type BotMode = 'off' | 'approve' | 'auto';
+
+export type BotState = {
+  id: number;
+  mode: BotMode;
+  dailyHour: number;
+  dailyMinute: number;
+  lastRunAt: string | null;
+  nextRunAt: string | null;
+  pendingDraft: string | null;
+  updatedAt: string;
+};
+
+export type BotHistoryItem = {
+  id: number;
+  content: string;
+  trigger: 'scheduled' | 'manual';
+  mode: BotMode;
+  status: 'published' | 'pending' | 'rejected' | 'failed';
+  error: string | null;
+  createdAt: string;
+};
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -19,9 +43,9 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(baseUrl: string, path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -38,20 +62,55 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
+// --- apps/api (курси, вхід) ---
+
 export function login(email: string, password: string) {
-  return request<{ accessToken: string }>('/api/admin/login', {
+  return request<{ accessToken: string }>(API_BASE, '/api/admin/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 }
 
 export function fetchCourses() {
-  return request<Course[]>('/api/admin/courses');
+  return request<Course[]>(API_BASE, '/api/admin/courses');
 }
 
 export function saveCourse(course: Course) {
-  return request<Course>('/api/admin/courses', {
+  return request<Course>(API_BASE, '/api/admin/courses', {
     method: 'PUT',
     body: JSON.stringify(course),
   });
+}
+
+// --- apps/bot (канал-бот) ---
+
+export function fetchBotStatus() {
+  return request<BotState>(BOT_API_BASE, '/api/status');
+}
+
+export function setBotMode(mode: BotMode) {
+  return request<BotState>(BOT_API_BASE, '/api/mode', {
+    method: 'POST',
+    body: JSON.stringify({ mode }),
+  });
+}
+
+export function postNow() {
+  return request<BotState>(BOT_API_BASE, '/api/post-now', { method: 'POST' });
+}
+
+export function publishDraft() {
+  return request<BotState>(BOT_API_BASE, '/api/draft/publish', { method: 'POST' });
+}
+
+export function regenerateDraft() {
+  return request<BotState>(BOT_API_BASE, '/api/draft/regenerate', { method: 'POST' });
+}
+
+export function rejectDraft() {
+  return request<BotState>(BOT_API_BASE, '/api/draft/reject', { method: 'POST' });
+}
+
+export function fetchBotHistory(limit = 20) {
+  return request<BotHistoryItem[]>(BOT_API_BASE, `/api/history?limit=${limit}`);
 }
