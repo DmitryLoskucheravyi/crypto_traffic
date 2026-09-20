@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "perfect-ui": {
+      "source": "dris1153/perfect-ui",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "e3517f43a08011ba462c030abde5c405b40ba6fc9ce7569a9debe871fd13c35c"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto Channel Bot — панель</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="topbar">
+      <h1>Crypto Channel Bot</h1>
+      <button id="logoutBtn" class="btn btn-ghost" hidden>Вийти</button>
+    </header>
+
+    <section id="loginView" class="card">
+      <h2>Вхід</h2>
+      <form id="loginForm" class="form">
+        <label>Логін<input type="text" id="username" autocomplete="username" required /></label>
+        <label>Пароль<input type="password" id="password" autocomplete="current-password" required /></label>
+        <button type="submit" class="btn btn-primary">Увійти</button>
+        <p id="loginError" class="error" hidden></p>
+      </form>
+    </section>
+
+    <section id="dashboardView" hidden>
+      <section class="card">
+        <h2>Статус</h2>
+        <div class="status-grid">
+          <div><span class="label">Режим</span><span id="statusMode" class="value">—</span></div>
+          <div><span class="label">Наступний запуск</span><span id="statusNext" class="value">—</span></div>
+          <div><span class="label">Останній запуск</span><span id="statusLast" class="value">—</span></div>
+        </div>
+
+        <div class="mode-switch">
+          <button class="mode-btn" data-mode="off">off</button>
+          <button class="mode-btn" data-mode="approve">approve</button>
+          <button class="mode-btn" data-mode="auto">auto</button>
+        </div>
+
+        <button id="postNowBtn" class="btn btn-primary">⏳ Запустити зараз</button>
+        <p id="statusMsg" class="hint" hidden></p>
+      </section>
+
+      <section id="draftCard" class="card" hidden>
+        <h2>Чернетка на розгляді</h2>
+        <p id="draftText" class="draft-text"></p>
+        <div class="draft-actions">
+          <button id="publishBtn" class="btn btn-primary">✅ Опублікувати</button>
+          <button id="regenerateBtn" class="btn btn-ghost">🔁 Перегенерувати</button>
+          <button id="rejectBtn" class="btn btn-danger">❌ Відхилити</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Історія</h2>
+        <ul id="historyList" class="history-list"></ul>
+      </section>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

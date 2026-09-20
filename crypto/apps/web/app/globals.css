@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Locked palette — plans/2026-09-20-crypto-courses-landing/visual-direction.md */
+    --bg: 240 8% 5%;
+    --surface: 252 11% 9%;
+    --ink: 40 26% 93%;
+    --ink-muted: 32 7% 63%;
+    --accent: 41 54% 54%;
+    --accent-soft: 41 40% 30%;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: linear-gradient(180deg, hsl(var(--surface) / 0.7), hsl(var(--surface) / 0.4));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--ink) / 0.08);
+  }
+
+  .text-gradient-gold {
+    background: linear-gradient(120deg, hsl(var(--accent)), hsl(var(--ink)) 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,10 @@
+.env
+.env.*.local
+node_modules/
+dist/
+.next/
+out/
+*.log
+.DS_Store
+mongo-data/
+.perfect-ui/

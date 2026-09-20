@@ -1,0 +1,10 @@
+services:
+  bot:
+    build: .
+    env_file: .env
+    ports:
+      - "${PANEL_PORT:-3000}:${PANEL_PORT:-3000}"
+      - "${TELEGRAM_WEBHOOK_PORT:-3001}:${TELEGRAM_WEBHOOK_PORT:-3001}"
+    volumes:
+      - ./prisma:/app/prisma
+    restart: unless-stopped

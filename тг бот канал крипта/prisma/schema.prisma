@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Єдиний рядок (id = 1) зі станом бота: режим, розклад, поточна чернетка.
+model State {
+  id           Int       @id @default(1)
+  mode         String    @default("off") // off | approve | auto
+  dailyHour    Int       @default(9)
+  dailyMinute  Int       @default(0)
+  lastRunAt    DateTime?
+  nextRunAt    DateTime?
+  pendingDraft String?
+  updatedAt    DateTime  @updatedAt
+}
+
+model PostHistory {
+  id        Int      @id @default(autoincrement())
+  content   String
+  trigger   String // scheduled | manual
+  mode      String // off | approve | auto (режим на момент запуску)
+  status    String // published | pending | rejected | failed
+  error     String?
+  createdAt DateTime @default(now())
+}
