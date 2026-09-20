@@ -56,19 +56,9 @@ const Chip = ({ children }: { children: React.ReactNode }) => (
 export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
-  // Mounted on the first expand and kept mounted after: the second swap has to
-  // be instant, and nothing should travel the wire before it is asked for.
-  const [frontMounted, setFrontMounted] = useState(false);
   const panelId = useId();
 
   const hasModules = stage.modules.length > 0;
-  const hasFront = !!stage.imageFrontUrl;
-
-  const toggle = () =>
-    setOpen((v) => {
-      if (!v && hasFront) setFrontMounted(true);
-      return !v;
-    });
 
   return (
     <motion.div
@@ -92,37 +82,13 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
           }}
           className="pointer-events-none absolute -right-2 -top-6 h-24 w-24 select-none"
         >
-          <motion.div
-            animate={{ opacity: open && hasFront ? 0 : 1 }}
-            transition={{ duration: DURATION.standard, ease: EASE }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={stage.imageUrl}
-              alt=""
-              width={96}
-              height={96}
-              className="h-24 w-24 object-contain"
-            />
-          </motion.div>
-
-          {hasFront && frontMounted && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: open ? 1 : 0 }}
-              transition={{ duration: DURATION.standard, ease: EASE }}
-              className="absolute inset-0"
-            >
-              <Image
-                src={stage.imageFrontUrl}
-                alt=""
-                width={96}
-                height={96}
-                loading="lazy"
-                className="h-24 w-24 object-contain"
-              />
-            </motion.div>
-          )}
+          <Image
+            src={stage.imageUrl}
+            alt=""
+            width={96}
+            height={96}
+            className="h-24 w-24 object-contain"
+          />
         </motion.div>
       )}
 
@@ -155,7 +121,7 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
         <motion.div variants={line}>
           <button
             type="button"
-            onClick={toggle}
+            onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-controls={panelId}
             className="mt-5 w-full rounded-lg border border-ink/15 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted transition-colors duration-quick ease-premium hover:border-accent/40 hover:text-ink"

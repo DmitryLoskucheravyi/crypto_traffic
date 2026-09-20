@@ -11,15 +11,6 @@ const IMAGE_OPTIONS = [
   ...[1, 2, 3, 4, 5, 6].map((i) => ({ value: `/roadmap-${i}.png`, label: `Об'єкт ${i}` })),
 ];
 
-// Shown instead of the isometric object while the card is expanded.
-const FRONT_IMAGE_OPTIONS = [
-  { value: '', label: 'Без підміни' },
-  ...[1, 2, 3, 4, 5, 6].map((i) => ({
-    value: `/roadmap-${i}-front.png`,
-    label: `Об'єкт ${i} — фронт`,
-  })),
-];
-
 export const emptyDraft = (): RoadmapStageDraft => ({
   title: '',
   lessonsCount: 0,
@@ -27,7 +18,6 @@ export const emptyDraft = (): RoadmapStageDraft => ({
   summary: '',
   modules: [],
   imageUrl: '',
-  imageFrontUrl: '',
   active: true,
 });
 
@@ -38,7 +28,6 @@ const toDraft = (stage: RoadmapStage): RoadmapStageDraft => ({
   summary: stage.summary ?? '',
   modules: stage.modules ?? [],
   imageUrl: stage.imageUrl ?? '',
-  imageFrontUrl: stage.imageFrontUrl ?? '',
   active: stage.active,
 });
 
@@ -143,21 +132,6 @@ export const RoadmapStageEditor = ({ stage, onSave, onCancel }: Props) => {
             ))}
           </select>
         </div>
-      </div>
-
-      <div className="mt-3">
-        <label className="block text-sm text-ink-muted">Зображення при розкритті</label>
-        <select
-          value={form.imageFrontUrl}
-          onChange={(e) => update('imageFrontUrl', e.target.value)}
-          className={field}
-        >
-          {FRONT_IMAGE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
       </div>
 
       <label className="flex items-center gap-2 mt-4 text-sm text-ink-muted">
