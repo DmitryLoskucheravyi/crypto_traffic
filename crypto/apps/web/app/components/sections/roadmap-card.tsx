@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useId, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { content } from '../../lib/content';
 import { RoadmapStage } from '../../lib/api';
 import { DURATION, EASE } from '../../lib/motion';
@@ -34,18 +34,6 @@ const line = {
   visible: { opacity: 1, y: 0, transition: { duration: DURATION.standard, ease: EASE } },
 };
 
-// The object arrives last and from above — it drops onto the card rather than
-// sliding in alongside the text.
-const object = {
-  hidden: { opacity: 0, scale: 0.8, y: -12 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: DURATION.slow, ease: EASE, delay: 0.2 },
-  },
-};
-
 const Chip = ({ children }: { children: React.ReactNode }) => (
   <span className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-muted">
     <span className="h-1.5 w-1.5 shrink-0 bg-accent" />
@@ -54,7 +42,6 @@ const Chip = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
-  const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const panelId = useId();
 
@@ -66,21 +53,14 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
       className="group relative rounded-xl border border-ink/10 bg-surface/95 p-6 backdrop-blur-md transition-colors duration-standard ease-premium hover:border-accent/30"
     >
       {stage.imageUrl && (
-        <motion.div
-          variants={object}
-          animate={
-            reduceMotion || !open ? undefined : { y: -10, scale: 1.18, rotate: -4 }
-          }
-          transition={{ duration: DURATION.standard, ease: EASE }}
+        // Deliberately static: no entrance, no reaction to the card opening.
+        // A plain div rather than a motion one — inside the card's variant
+        // cascade a motion child without its own variants inherits the
+        // parent's "hidden" state and never comes back. z-10 keeps it above
+        // the transformed siblings below it.
+        <div
           aria-hidden="true"
-          // Grows away from the corner it hangs in, so scaling never pushes it
-          // over the heading.
-          style={{
-            transformOrigin: 'top right',
-            filter: open && !reduceMotion ? 'drop-shadow(0 0 12px hsl(var(--accent) / 0.45))' : 'none',
-            transition: 'filter 400ms cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-          className="pointer-events-none absolute -right-2 -top-6 h-24 w-24 select-none"
+          className="pointer-events-none absolute -right-2 -top-6 z-10 h-24 w-24 select-none"
         >
           <Image
             src={stage.imageUrl}
@@ -89,7 +69,7 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
             height={96}
             className="h-24 w-24 object-contain"
           />
-        </motion.div>
+        </div>
       )}
 
       <motion.span
