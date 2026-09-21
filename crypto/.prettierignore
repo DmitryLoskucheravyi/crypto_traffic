@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+dist/
+.dev-logs/
+.perfect-ui/
+package-lock.json
+apps/web/public/
+apps/web/tsconfig.tsbuildinfo
+plans/
+.agents/
+.claude/
+apps/web/next-env.d.ts

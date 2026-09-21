@@ -4,7 +4,6 @@ import { Bento } from './components/sections/bento';
 import { IncomeCalculator } from './components/sections/income-calculator';
 import { TickerDivider } from './components/sections/ticker-divider';
 import { Comparison } from './components/sections/comparison';
-import { LessonPreview } from './components/sections/lesson-preview';
 import { CountersStrip } from './components/sections/counters-strip';
 import { HowItWorks } from './components/sections/how-it-works';
 import { Roadmap } from './components/sections/roadmap';
@@ -13,39 +12,27 @@ import { Courses } from './components/sections/courses';
 import { Faq } from './components/sections/faq';
 import { FinalCta } from './components/sections/final-cta';
 import { Footer } from './components/sections/footer';
-import { getBotUsername, getCourses, getRoadmapStages, getSiteContent } from './lib/api';
 
-// API is unreachable from inside the Docker build stage, so a statically
-// prerendered page would bake in empty courses/bot data until the next
-// revalidation. Fetch fresh on every request instead — traffic is low and
-// the API is local, so there's no real cost.
-export const dynamic = 'force-dynamic';
-
-export default async function Page() {
-  const [courses, botUsername, roadmapStages, siteContent] = await Promise.all([
-    getCourses(),
-    getBotUsername(),
-    getRoadmapStages(),
-    getSiteContent(),
-  ]);
-
+// Ни одного запроса на сервер: весь контент лежит в app/lib/site-data.ts и
+// запекается в HTML на сборке. Страница — статический файл, её можно раздать
+// любым nginx без Node-процесса рядом.
+export default function Page() {
   return (
     <main>
-      <Hero botUsername={botUsername} />
+      <Hero />
       <TrustStrip />
       <Bento />
-      <IncomeCalculator calculator={siteContent.calculator} courses={courses} />
-      <HowItWorks courses={courses} />
-      <Roadmap stages={roadmapStages} />
-      <TickerDivider ticker={siteContent.ticker} />
+      <IncomeCalculator />
+      <HowItWorks />
+      <Roadmap />
+      <TickerDivider />
       <MarketChart />
-      <Comparison comparison={siteContent.comparison} />
-      <LessonPreview preview={siteContent.lessonPreview} />
-      <CountersStrip counters={siteContent.counters} />
-      <Courses courses={courses} botUsername={botUsername} />
+      <Comparison />
+      <CountersStrip />
+      <Courses />
       <Faq />
-      <FinalCta botUsername={botUsername} />
-      <Footer botUsername={botUsername} />
+      <FinalCta />
+      <Footer />
     </main>
   );
 }

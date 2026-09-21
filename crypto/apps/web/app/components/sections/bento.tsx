@@ -226,8 +226,8 @@ export const Bento = () => {
   const next = (active + 1) % COUNT;
 
   return (
-    <section className="overflow-x-clip py-24 md:py-32">
-      <div className="max-w-container mx-auto px-6 md:px-8">
+    <section className="overflow-x-clip py-20 md:py-32">
+      <div className="max-w-container mx-auto px-5 sm:px-6 md:px-8">
         <div className="md:grid md:grid-cols-10 md:gap-12">
           {/* Left rail — sticks alongside the track on desktop, stacks above it
               on mobile. */}
@@ -244,7 +244,7 @@ export const Bento = () => {
               <span className="text-ink-muted">{pad(COUNT)}</span>
             </span>
 
-            <h2 className="mt-6 max-w-md font-display text-3xl uppercase leading-[0.95] tracking-tight md:text-5xl">
+            <h2 className="mt-6 max-w-md font-display text-[1.75rem] uppercase leading-[1.02] tracking-tight sm:text-3xl sm:leading-[0.95] md:text-5xl">
               {content.bento.title}
             </h2>
             <p className="mt-5 max-w-md text-ink-muted">{content.bento.sub}</p>
@@ -270,7 +270,7 @@ export const Bento = () => {
             whileInView="visible"
             viewport={{ once: true, margin: '-100px' }}
             variants={fadeUp}
-            className="group/track relative mt-12 md:col-span-7 md:mt-0 mr-[calc(-1.5rem_-_max(0px,(100vw_-_1280px)/2))] md:mr-[calc(-2rem_-_max(0px,(100vw_-_1280px)/2))]"
+            className="group/track relative mr-[calc(-1.25rem_-_max(0px,(100vw_-_1280px)/2))] mt-10 sm:mr-[calc(-1.5rem_-_max(0px,(100vw_-_1280px)/2))] md:col-span-7 md:mr-[calc(-2rem_-_max(0px,(100vw_-_1280px)/2))] md:mt-0"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
             onFocus={() => setPaused(true)}
@@ -281,7 +281,7 @@ export const Bento = () => {
                 time, and reaching the end of that fill is what advances the
                 track. Hovering, dragging or scrolling the section out of view
                 parks the animation where it stands instead of restarting it. */}
-            <div className="mb-6 flex gap-2 pr-6 md:pr-8">
+            <div className="mb-6 flex gap-2 pr-5 sm:pr-6 md:pr-8">
               {CELLS.map((cell, i) => {
                 const isActive = i === active;
                 const running = isActive && !reduceMotion && inView;
@@ -325,7 +325,7 @@ export const Bento = () => {
               onPointerMove={onPointerMove}
               onPointerUp={endDrag}
               onPointerCancel={endDrag}
-              className={`no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto pr-6 outline-none md:pr-8 ${
+              className={`no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pr-5 outline-none sm:gap-5 sm:pr-6 md:pr-8 ${
                 dragging ? 'cursor-grabbing select-none' : 'cursor-grab'
               }`}
             >
@@ -339,7 +339,7 @@ export const Bento = () => {
                     // Only the middle copy is exposed to assistive tech; the
                     // two padding copies would otherwise read as duplicates.
                     aria-hidden={copy !== 1 || undefined}
-                    className={`relative aspect-[3/4] w-[80vw] shrink-0 snap-start overflow-hidden rounded-3xl border border-ink/10 bg-surface md:w-[420px] ${
+                    className={`relative aspect-[4/5] w-[82vw] shrink-0 snap-start overflow-hidden rounded-3xl border border-ink/10 bg-surface sm:aspect-[3/4] sm:w-[70vw] md:w-[420px] ${
                       reduceMotion
                         ? ''
                         : `transition-[opacity,transform] duration-standard ease-premium ${
@@ -351,7 +351,7 @@ export const Bento = () => {
                       src={cell.image}
                       alt=""
                       fill
-                      sizes="(max-width: 768px) 80vw, 420px"
+                      sizes="(max-width: 768px) 82vw, 420px"
                       className="object-cover"
                       draggable={false}
                     />
@@ -360,14 +360,14 @@ export const Bento = () => {
                       className="pointer-events-none absolute inset-0"
                       style={{ backgroundImage: CARD_SCRIM }}
                     />
-                    <span className="absolute left-7 top-7 inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-surface/95 text-accent backdrop-blur">
+                    <span className="absolute left-5 top-5 inline-flex h-10 w-10 items-center justify-center rounded-full border border-ink/10 bg-surface/95 text-accent backdrop-blur sm:left-7 sm:top-7">
                       <Icon size={20} />
                     </span>
-                    <div className="absolute inset-x-0 bottom-0 p-7">
+                    <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
                       <span className="font-mono text-xs tabular-nums text-accent/60">
                         {pad((i % COUNT) + 1)}
                       </span>
-                      <h3 className="mt-2 font-display text-xl uppercase leading-tight md:text-2xl">
+                      <h3 className="mt-2 font-display text-lg uppercase leading-tight sm:text-xl md:text-2xl">
                         {cell.title}
                       </h3>
                       <p className="mt-3 text-sm leading-relaxed text-ink-muted">{cell.body}</p>
@@ -384,7 +384,7 @@ export const Bento = () => {
               type="button"
               aria-label={CELLS[next].title}
               onClick={() => scrollToIndex(absRef.current + 1)}
-              className="absolute right-8 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface/95 text-ink opacity-0 backdrop-blur transition-opacity duration-standard ease-premium hover:text-accent focus-visible:opacity-100 group-hover/track:opacity-100 md:right-[calc(4rem_+_max(0px,(100vw_-_1280px)/2))]"
+              className="absolute right-8 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-ink/10 bg-surface/95 text-ink opacity-0 backdrop-blur transition-opacity duration-standard ease-premium hover:text-accent focus-visible:opacity-100 group-hover/track:opacity-100 md:flex md:right-[calc(4rem_+_max(0px,(100vw_-_1280px)/2))]"
             >
               <CtaArrow size={20} />
             </button>

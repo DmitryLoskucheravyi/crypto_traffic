@@ -15,9 +15,33 @@ const PAN = 920; // how far the slowest line travels across a full scroll pass
 // Three lines over the same band. Each has its own seed, drift and pan speed —
 // the faster ones travel further per scroll, so the trio never moves as a block.
 const LINES = [
-  { seed: 1337, color: 'hsl(var(--accent))', baseline: 0.62, amp: 60, speed: 1, width: 2.5, opacity: 1 },
-  { seed: 8821, color: 'hsl(358 72% 58%)', baseline: 0.48, amp: 52, speed: 1.18, width: 2, opacity: 0.85 },
-  { seed: 4207, color: 'hsl(44 92% 58%)', baseline: 0.74, amp: 46, speed: 1.36, width: 2, opacity: 0.85 },
+  {
+    seed: 1337,
+    color: 'hsl(var(--accent))',
+    baseline: 0.62,
+    amp: 60,
+    speed: 1,
+    width: 2.5,
+    opacity: 1,
+  },
+  {
+    seed: 8821,
+    color: 'hsl(358 72% 58%)',
+    baseline: 0.48,
+    amp: 52,
+    speed: 1.18,
+    width: 2,
+    opacity: 0.85,
+  },
+  {
+    seed: 4207,
+    color: 'hsl(44 92% 58%)',
+    baseline: 0.74,
+    amp: 46,
+    speed: 1.36,
+    width: 2,
+    opacity: 0.85,
+  },
 ] as const;
 
 type Geometry = {
@@ -28,7 +52,12 @@ type Geometry = {
   length: number;
 };
 
-function buildPoints(seed: number, baseline: number, amp: number, width: number): [number, number][] {
+function buildPoints(
+  seed: number,
+  baseline: number,
+  amp: number,
+  width: number,
+): [number, number][] {
   const rand = seededRandom(seed);
   const points = Math.round((width / 2200) * 60);
   let y = HEIGHT * baseline;
@@ -116,7 +145,7 @@ const Ticker = () => {
         {content.marketChart.tickerLabel}
       </span>
       <div
-        className={`font-mono text-3xl tabular-nums transition-colors duration-standard ease-premium md:text-5xl ${
+        className={`font-mono text-2xl tabular-nums transition-colors duration-standard ease-premium sm:text-3xl md:text-5xl ${
           quote.up ? 'text-accent' : 'text-bear'
         }`}
       >
@@ -196,8 +225,7 @@ export const MarketChart = () => {
         const scale = plotH / HEIGHT;
 
         const lead = LINES[0];
-        const tipX =
-          xAtLengthFraction(GEOMETRY[0], p * lead.speed) * scale - PAN * lead.speed * p;
+        const tipX = xAtLengthFraction(GEOMETRY[0], p * lead.speed) * scale - PAN * lead.speed * p;
         const cx = Math.max(0, Math.min(tipX, plotW * 0.92));
 
         cursor.setAttribute('transform', `translate(${cx.toFixed(1)}, 0)`);
@@ -242,8 +270,8 @@ export const MarketChart = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="overflow-hidden py-24 md:py-32">
-      <div className="mx-auto max-w-container px-6 md:px-8">
+    <section ref={sectionRef} className="overflow-hidden py-20 md:py-32">
+      <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -255,7 +283,7 @@ export const MarketChart = () => {
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
               {content.marketChart.eyebrow}
             </span>
-            <h2 className="mt-4 max-w-2xl text-2xl font-semibold md:text-[2rem] md:leading-[1.15]">
+            <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]">
               {content.marketChart.title}
             </h2>
             <p className="mt-3 max-w-lg text-ink-muted">{content.marketChart.sub}</p>
@@ -267,7 +295,7 @@ export const MarketChart = () => {
         </motion.div>
       </div>
 
-      <div ref={plotRef} className="relative mt-14 h-[220px] md:h-[300px]">
+      <div ref={plotRef} className="relative mt-12 h-[180px] sm:h-[220px] md:mt-14 md:h-[300px]">
         {/* Same ruled paper as the hero — it ties the two chart moments together
             without adding anything new to the design system. */}
         <div className="chart-grid chart-grid-fade absolute inset-0" aria-hidden="true" />

@@ -10,8 +10,8 @@ export const Faq = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faq" className="scroll-mt-24 py-24 md:py-32">
-      <div className="mx-auto max-w-3xl px-6 md:px-8">
+    <section id="faq" className="scroll-mt-24 py-20 md:py-32">
+      <div className="mx-auto max-w-3xl px-5 sm:px-6 md:px-8">
         <motion.h2
           initial="hidden"
           whileInView="visible"
@@ -35,7 +35,7 @@ export const Faq = () => {
               <motion.div key={item.q} variants={fadeUp} className="glass-panel rounded-lg">
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="group flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+                  className="group flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
                   aria-expanded={isOpen}
                 >
                   <span className="font-medium">{item.q}</span>
@@ -61,7 +61,9 @@ export const Faq = () => {
                   style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
                 >
                   <div className="overflow-hidden">
-                    <p className="px-6 pb-5 text-sm leading-relaxed text-ink-muted">{item.a}</p>
+                    <p className="px-5 pb-5 text-sm leading-relaxed text-ink-muted sm:px-6">
+                      {item.a}
+                    </p>
                   </div>
                 </div>
               </motion.div>

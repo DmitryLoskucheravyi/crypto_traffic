@@ -14,7 +14,6 @@
 | `apps/web` | Next.js 14 App Router, TS, Tailwind | 3030 | лендинг (RU) |
 | `apps/api` | NestJS + Mongoose (MongoDB), глобальный префикс `/api` | 3031 | API |
 | `apps/admin` | Next.js, TS, Tailwind | — | админка (UA) |
-| `apps/bot` | Telegram-бот | 3033 | — |
 
 Жёсткие правила, действующие в этом репозитории (см.
 `plans/2026-09-20-crypto-landing-redesign/overrides.md`):

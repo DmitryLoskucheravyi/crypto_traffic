@@ -22,7 +22,12 @@ export const SelectField = ({
   labelId?: string;
 }) => {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(() => Math.max(0, options.findIndex((o) => o.value === value)));
+  const [active, setActive] = useState(() =>
+    Math.max(
+      0,
+      options.findIndex((o) => o.value === value),
+    ),
+  );
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listId = useId();
@@ -98,7 +103,12 @@ export const SelectField = ({
         aria-controls={listId}
         aria-labelledby={labelId}
         onClick={() => {
-          setActive(Math.max(0, options.findIndex((o) => o.value === value)));
+          setActive(
+            Math.max(
+              0,
+              options.findIndex((o) => o.value === value),
+            ),
+          );
           setOpen((v) => !v);
         }}
         onKeyDown={onKeyDown}

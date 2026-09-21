@@ -8,10 +8,21 @@
   "scripts": {
     "dev:web": "npm run dev --workspace apps/web",
     "dev:api": "npm run start:dev --workspace apps/api",
-    "dev:admin": "npm run dev --workspace apps/admin",
-    "dev:bot": "npm run start:dev --workspace apps/bot",
     "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-up.ps1",
     "dev:down": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-down.ps1",
-    "build": "npm run build --workspaces"
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "cd .. && husky crypto/.husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs,json,css,md,yml,yaml}": "prettier --write"
   }
 }

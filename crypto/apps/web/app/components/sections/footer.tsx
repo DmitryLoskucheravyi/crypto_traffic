@@ -1,4 +1,5 @@
 import { content } from '../../lib/content';
+import { BOT_USERNAME, BOT_URL } from '../../lib/site-data';
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <li>
@@ -11,11 +12,11 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
   </li>
 );
 
-export const Footer = ({ botUsername }: { botUsername: string }) => (
+export const Footer = () => (
   <footer className="border-t border-ink/10">
-    <div className="mx-auto max-w-container px-6 py-14 md:px-8 md:py-16">
-      <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr] md:gap-12">
-        <div>
+    <div className="mx-auto max-w-container px-5 py-12 sm:px-6 sm:py-14 md:px-8 md:py-16">
+      <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr] md:gap-12">
+        <div className="sm:col-span-2 md:col-span-1">
           <div className="group flex items-center gap-2.5">
             <img
               src="/logo-mark.png"
@@ -24,9 +25,7 @@ export const Footer = ({ botUsername }: { botUsername: string }) => (
               height={24}
               className="transition-transform duration-standard ease-premium group-hover:rotate-12"
             />
-            <span className="font-mono text-sm tracking-wide text-ink-muted">
-              {content.footer.brand}
-            </span>
+            <span className="font-mono text-sm tracking-wide text-ink-muted">{content.brand}</span>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
             {content.footer.note}
@@ -48,21 +47,15 @@ export const Footer = ({ botUsername }: { botUsername: string }) => (
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink/40">
             {content.footer.contactLabel}
           </span>
-          {botUsername ? (
-            <a
-              href={`https://t.me/${botUsername}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-2 text-sm text-ink transition-colors duration-quick ease-premium hover:text-accent"
-            >
-              @{botUsername}
-              <span aria-hidden="true">↗</span>
-            </a>
-          ) : (
-            // The bot name comes from the API; without it a dead link is worse
-            // than a plain line of text.
-            <p className="mt-4 text-sm text-ink-muted">{content.footer.contactFallback}</p>
-          )}
+          <a
+            href={BOT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 text-sm text-ink transition-colors duration-quick ease-premium hover:text-accent"
+          >
+            @{BOT_USERNAME}
+            <span aria-hidden="true">↗</span>
+          </a>
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
             {content.footer.contactNote}
           </p>
@@ -70,11 +63,9 @@ export const Footer = ({ botUsername }: { botUsername: string }) => (
       </div>
 
       <div className="mt-12 border-t border-ink/10 pt-6">
-        <p className="max-w-3xl text-xs leading-relaxed text-ink-muted/80">
-          {content.footer.risk}
-        </p>
+        <p className="max-w-3xl text-xs leading-relaxed text-ink-muted/80">{content.footer.risk}</p>
         <p className="mt-4 font-mono text-xs text-ink-muted">
-          © {new Date().getFullYear()} {content.footer.brand}
+          © {new Date().getFullYear()} {content.brand}
         </p>
       </div>
     </div>

@@ -1,3 +1,5 @@
+# Лендинг статический: next build кладёт готовый сайт в out/, и дальше нужен
+# только веб-сервер. Node в рантайме нет вообще.
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY apps/web/package.json ./
@@ -5,12 +7,7 @@ RUN npm install
 COPY apps/web/ ./
 RUN npm run build
 
-FROM node:20-alpine
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-COPY --from=build /app/public ./public
-EXPOSE 3030
-ENV PORT=3030
-CMD ["node", "server.js"]
+FROM nginx:1.27-alpine
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/out /usr/share/nginx/html
+EXPOSE 80

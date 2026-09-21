@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
+import { PaymentsModule } from '../payments/payments.module';
 import { TelegramService } from './telegram.service';
-import { TelegramController } from './telegram.controller';
-import { CoursesModule } from '../courses/courses.module';
 
 @Module({
-  imports: [CoursesModule],
-  controllers: [TelegramController],
+  imports: [PaymentsModule],
   providers: [TelegramService],
+  exports: [TelegramService],
 })
 export class TelegramModule {}

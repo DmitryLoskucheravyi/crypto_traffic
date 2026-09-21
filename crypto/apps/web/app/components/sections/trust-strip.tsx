@@ -43,7 +43,8 @@ const Electron = ({ d, charge }: { d: string; charge: Charge }) => (
     strokeDasharray={`${charge.len} 200`}
     strokeDashoffset={charge.len}
     style={{
-      filter: 'drop-shadow(0 0 2px hsl(var(--accent))) drop-shadow(0 0 6px hsl(var(--accent) / 0.6))',
+      filter:
+        'drop-shadow(0 0 2px hsl(var(--accent))) drop-shadow(0 0 6px hsl(var(--accent) / 0.6))',
     }}
   >
     <animate
@@ -67,7 +68,7 @@ export const TrustStrip = () => {
         whileInView="visible"
         viewport={{ once: true, margin: '-60px' }}
         variants={fadeUp}
-        className="marquee-mask py-8"
+        className="marquee-mask py-6 sm:py-8"
       >
         {/* Track holds the set twice and shifts by exactly -50%; icon + wire
             blocks are all the same width, so the midpoint seam is invisible. */}
@@ -82,7 +83,7 @@ export const TrustStrip = () => {
                   width={44}
                   height={44}
                   unoptimized
-                  className="h-11 w-11 opacity-70 transition-opacity duration-standard ease-premium hover:opacity-100"
+                  className="h-9 w-9 opacity-70 transition-opacity duration-standard ease-premium hover:opacity-100 sm:h-11 sm:w-11"
                 />
                 <svg width={96} height={56} viewBox="0 0 96 56" fill="none" className="shrink-0">
                   <path
@@ -91,9 +92,7 @@ export const TrustStrip = () => {
                     strokeWidth="1"
                     shapeRendering="crispEdges"
                   />
-                  {!reduceMotion && wire.charge && (
-                    <Electron d={wire.d} charge={wire.charge} />
-                  )}
+                  {!reduceMotion && wire.charge && <Electron d={wire.d} charge={wire.charge} />}
                 </svg>
               </div>
             );

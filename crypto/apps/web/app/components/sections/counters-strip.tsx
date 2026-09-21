@@ -1,25 +1,21 @@
 'use client';
 
 import { content } from '../../lib/content';
-import { SiteContent } from '../../lib/api';
+import { counters } from '../../lib/site-data';
 import { CountUp } from '../ui/count-up';
-
-type Counters = NonNullable<SiteContent['counters']>;
 
 const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(
     new Date(iso),
   );
 
-// Owner-entered numbers with the date they were last confirmed. No live feed
-// and no drifting counter: the date is what makes a static number honest.
-export const CountersStrip = ({ counters }: { counters: Counters | null }) => {
-  if (!counters) return null;
-
+// Fixed numbers with the date they were last confirmed. No live feed and no
+// drifting counter: the date is what makes a static number honest.
+export const CountersStrip = () => {
   return (
     <section className="border-y border-ink/10 py-10">
-      <div className="mx-auto flex max-w-container flex-col gap-6 px-6 md:flex-row md:items-end md:justify-between md:px-8">
-        <div className="flex flex-wrap gap-10">
+      <div className="mx-auto flex max-w-container flex-col gap-6 px-5 sm:px-6 md:flex-row md:items-end md:justify-between md:px-8">
+        <div className="flex flex-wrap gap-8 sm:gap-10">
           {counters.studentsTotal !== null && (
             <div>
               <p className="font-display text-3xl font-semibold tabular-nums text-accent md:text-4xl">

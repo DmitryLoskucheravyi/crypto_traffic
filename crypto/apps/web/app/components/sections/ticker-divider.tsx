@@ -1,19 +1,15 @@
 'use client';
 
 import { useReducedMotion } from 'framer-motion';
-import { SiteContent } from '../../lib/api';
-
-type Ticker = NonNullable<SiteContent['ticker']>;
+import { ticker } from '../../lib/site-data';
 
 // Deliberately not a price tape: the items are course vocabulary, so nothing
 // here can be mistaken for a live quote.
 // Same seam trick as trust-strip: the set is rendered twice and the track
 // shifts by exactly -50%, so the loop point is invisible.
-export const TickerDivider = ({ ticker }: { ticker: Ticker | null }) => {
+export const TickerDivider = () => {
   const reduceMotion = useReducedMotion();
-  if (!ticker) return null;
-
-  const items = [...ticker.items, ...ticker.items];
+  const items = [...ticker, ...ticker];
 
   return (
     <div className="overflow-hidden border-y border-ink/10 py-3" aria-hidden="true">
@@ -23,7 +19,7 @@ export const TickerDivider = ({ ticker }: { ticker: Ticker | null }) => {
       >
         {items.map((item, i) => (
           <span key={`${item}-${i}`} className="flex shrink-0 items-center">
-            <span className="px-6 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-muted">
+            <span className="px-4 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-muted sm:px-6 sm:text-[11px]">
               {item}
             </span>
             <span className="h-1 w-1 shrink-0 bg-accent" />

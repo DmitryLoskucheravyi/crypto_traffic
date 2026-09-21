@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Піднімає весь локальний стек: Mongo в Docker + api / bot / admin / web у dev-режимі.
+    Піднімає весь локальний стек: Mongo в Docker + api / web у dev-режимі.
 
 .DESCRIPTION
     Читає crypto/.env і віддає змінні кожному сервісу через оточення процесу.
@@ -15,7 +15,7 @@
     dev-server apps/web). Перезапуск — через -Restart.
 
 .PARAMETER Only
-    Підняти лише вказані сервіси: mongo, api, bot, admin, web.
+    Підняти лише вказані сервіси: mongo, api, web.
 
 .PARAMETER Restart
     Спершу зупинити те, що вже слухає потрібні порти (через dev-down.ps1).
@@ -25,11 +25,11 @@
 
 .EXAMPLE
     .\scripts\dev-up.ps1
-    .\scripts\dev-up.ps1 -Only admin,api -Restart
+    .\scripts\dev-up.ps1 -Only api -Restart
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('mongo', 'api', 'bot', 'admin', 'web')]
+    [ValidateSet('mongo', 'api', 'web')]
     [string[]]$Only,
     [switch]$Restart,
     [switch]$SkipDocker,
@@ -134,14 +134,11 @@ if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir | Out
 
 $envMap = Read-DotEnv (Join-Path $root '.env')
 
-$apiPort   = [int]$envMap['API_PORT']
-$webPort   = [int]$envMap['WEB_PORT']
-$adminPort = [int]$envMap['ADMIN_PORT']
-$botPort   = [int]$envMap['BOT_PORT']
+$apiPort = [int]$envMap['API_PORT']
+$webPort = [int]$envMap['WEB_PORT']
 
 # docker-мережеві хости -> loopback, бо процеси йдуть на хості
 $localMongoUri = $envMap['MONGO_URI'] -replace '@mongo:', '@127.0.0.1:'
-$localApiUrl   = "http://127.0.0.1:$apiPort"
 
 if ($Restart) {
     Write-Step 'Зупиняю попередній запуск'
@@ -177,10 +174,10 @@ if ((Test-Wanted 'mongo') -and -not $SkipDocker) {
 
     if (Wait-Port 27017 90 'mongo') { Write-Ok 'mongo слухає 127.0.0.1:27017' }
 
-    # У compose api/web/admin/bot мають restart: unless-stopped, тому Docker Desktop
+    # У compose api/web мають restart: unless-stopped, тому Docker Desktop
     # піднімає їх сам при старті і вони забирають ті самі порти, що й dev-сервери.
     # У докері тримаємо ЛИШЕ базу — решту гасимо, аби порти дістались dev-режиму.
-    $appContainers = @('api', 'web', 'admin', 'bot')
+    $appContainers = @('api', 'web')
     Push-Location $root
     try {
         $running = @(Get-NativeOutput docker @('compose', 'ps', '--services', '--filter', 'status=running') |
@@ -194,38 +191,11 @@ if ((Test-Wanted 'mongo') -and -not $SkipDocker) {
 }
 elseif ($SkipDocker) { Write-Skip 'docker/mongo пропущено (-SkipDocker)' }
 
-# --- prisma для бота (sqlite, локальний файл) ---------------------------
-if (Test-Wanted 'bot') {
-    # npm-workspaces піднімає .prisma у корінь монорепи, але при окремій установці
-    # клієнт може лежати і всередині apps/bot — перевіряємо обидва місця.
-    $prismaPaths = @(
-        (Join-Path $root 'node_modules\.prisma\client'),
-        (Join-Path $root 'apps\bot\node_modules\.prisma\client')
-    )
-    $hasClient = $false
-    foreach ($p in $prismaPaths) { if (Test-Path $p) { $hasClient = $true } }
-
-    if (-not $hasClient) {
-        Write-Step 'prisma generate (apps/bot)'
-        Push-Location $root
-        try {
-            if ((Invoke-Native 'npm.cmd' @('run', 'prisma:generate', '--workspace', 'apps/bot')) -ne 0) {
-                # Найчастіша причина — EPERM на query_engine.dll, бо бот уже запущений
-                # і тримає файл. Це не привід не піднімати стек.
-                Write-Note 'prisma generate не пройшов — стартую бота на тому клієнті, що є'
-            }
-            else { Write-Ok 'prisma client згенеровано' }
-        } finally { Pop-Location }
-    }
-    else { Write-Skip 'prisma client на місці' }
-}
-
 # --- запуск сервісів ----------------------------------------------------
+# Лендінг статичний і в API не ходить — жодних спільних змінних у нього немає.
 $services = @(
-    @{ name = 'api';   port = $apiPort;   cmd = 'npm run start:dev --workspace apps/api'; env = @{ PORT = "$apiPort"; MONGO_URI = $localMongoUri } }
-    @{ name = 'bot';   port = $botPort;   cmd = 'npm run start:dev --workspace apps/bot'; env = @{ PORT = "$botPort" } }
-    @{ name = 'admin'; port = $adminPort; cmd = 'npm run dev --workspace apps/admin';     env = @{ PORT = "$adminPort"; NEXT_PUBLIC_API_URL = $localApiUrl; NEXT_PUBLIC_BOT_API_URL = "http://127.0.0.1:$botPort" } }
-    @{ name = 'web';   port = $webPort;   cmd = 'npm run dev --workspace apps/web';       env = @{ PORT = "$webPort"; API_INTERNAL_URL = $localApiUrl } }
+    @{ name = 'api'; port = $apiPort; cmd = 'npm run start:dev --workspace apps/api'; env = @{ PORT = "$apiPort"; MONGO_URI = $localMongoUri } }
+    @{ name = 'web'; port = $webPort; cmd = 'npm run dev --workspace apps/web';       env = @{ PORT = "$webPort" } }
 )
 
 $started = @()
@@ -288,11 +258,9 @@ foreach ($svc in $services) {
 
 Write-Host "`nСтек піднято:" -ForegroundColor Cyan
 Write-Host "  лендінг   http://localhost:$webPort"
-Write-Host "  адмінка   http://localhost:$adminPort"
-Write-Host "  api       http://localhost:$apiPort/api"
-Write-Host "  bot api   http://localhost:$botPort"
+Write-Host "  api       http://localhost:$apiPort/api/health"
 Write-Host "  mongo     127.0.0.1:27017 (docker)"
 Write-Host ""
-Write-Host "  логи:     Get-Content .dev-logs\admin.log -Wait -Tail 40"
+Write-Host "  логи:     Get-Content .dev-logs\api.log -Wait -Tail 40"
 Write-Host "  стоп:     .\scripts\dev-down.ps1"
 Write-Host ""

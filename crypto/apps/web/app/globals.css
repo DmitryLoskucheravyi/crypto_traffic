@@ -16,6 +16,19 @@
     /* Bearish/secondary — used only inside chart visuals (hero backdrop,
        market-chart readout), never as a general UI color. */
     --bear: 3 75% 60%;
+
+    /* Стопка карточек в «Как это работает»: где паркуется первая карточка и
+       какой полоской торчит каждая уже припаркованная. На телефоне шаг меньше,
+       иначе третья карточка уезжает за нижнюю кромку короткого экрана. */
+    --stack-top: 72px;
+    --stack-peek: 54px;
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --stack-top: 88px;
+      --stack-peek: 84px;
+    }
   }
 
   body {
@@ -29,6 +42,21 @@
     scrollbar-color: hsl(var(--ink) / 0.2) transparent;
     scrollbar-width: thin;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ни одна секция не имеет права давать горизонтальную прокрутку: в bento
+     трек намеренно вылезает за контейнер, и на телефоне это единственное, что
+     отделяет «кинематографично» от «страницу можно утащить вбок».
+     Именно clip, а не hidden: hidden сделал бы из html/body скролл-контейнер и
+     сломал бы position: sticky, на котором стоят bento и «Как это работает». */
+  html {
+    overflow-x: clip;
+  }
+
+  /* На телефоне абзацы переносятся по словам, а не разъезжают контейнер
+     длинными адресами кошельков и подобным. */
+  body {
+    overflow-wrap: break-word;
   }
 
   ::-webkit-scrollbar {
@@ -79,11 +107,15 @@
   }
 
   input[type='range']:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.25), 0 0 10px hsl(var(--accent) / 0.6);
+    box-shadow:
+      0 0 0 4px hsl(var(--accent) / 0.25),
+      0 0 10px hsl(var(--accent) / 0.6);
   }
 
   input[type='range']:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 4px hsl(var(--accent) / 0.25), 0 0 10px hsl(var(--accent) / 0.6);
+    box-shadow:
+      0 0 0 4px hsl(var(--accent) / 0.25),
+      0 0 10px hsl(var(--accent) / 0.6);
   }
 
   /* Heading ladder — the page steps down one rung per section instead of
@@ -93,7 +125,9 @@
        courses 2rem (heavier weight, it is the commercial section) ·
        faq 1.5rem · final CTA 2.25rem · footer body text.
      Sizes live on the sections themselves; this is the map they follow. */
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     @apply font-display;
     text-wrap: balance;
   }
@@ -198,7 +232,11 @@
     width: 18px;
     height: 18px;
     border: 1px solid hsl(var(--ink) / 0.25);
-    transition: width 200ms ease, height 200ms ease, left 200ms ease, top 200ms ease,
+    transition:
+      width 200ms ease,
+      height 200ms ease,
+      left 200ms ease,
+      top 200ms ease,
       border-color 200ms ease;
   }
 
@@ -264,7 +302,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

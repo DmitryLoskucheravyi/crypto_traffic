@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: crypto
+
+jobs:
+  check:
+    name: Формат, типы, тесты, сборка
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: crypto/package-lock.json
+
+      # Хуки git на CI не нужны и без .git в рабочем каталоге проекта husky
+      # просто упал бы на prepare.
+      - name: Установка зависимостей
+        run: npm ci --ignore-scripts
+
+      - name: Прогон prettier
+        run: npm run format:check
+
+      - name: Проверка типов
+        run: npm run typecheck
+
+      - name: Тесты
+        run: npm test
+
+      - name: Сборка
+        run: npm run build
+
+      # Готовый статический лендинг: его можно скачать из прогона и выложить
+      # куда угодно — отдельного рантайма он не требует.
+      - name: Публикация статики как артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-static
+          path: crypto/apps/web/out
+          retention-days: 14
+          if-no-files-found: error

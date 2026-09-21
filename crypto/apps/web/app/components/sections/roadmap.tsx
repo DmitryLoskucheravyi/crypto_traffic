@@ -6,11 +6,11 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { content } from '../../lib/content';
-import { RoadmapStage } from '../../lib/api';
+import { roadmapStages } from '../../lib/site-data';
 import { fadeUp, DURATION, EASE } from '../../lib/motion';
 import { RoadmapCard } from './roadmap-card';
 
-export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
+export const Roadmap = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const pathRef = useRef<HTMLDivElement>(null);
 
@@ -43,16 +43,13 @@ export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
     return () => ctx.revert();
   }, []);
 
-  // No stages configured in the admin panel — the section does not exist.
-  if (!stages.length) return null;
-
   return (
     <section
       id="roadmap"
       ref={sectionRef}
-      className="relative scroll-mt-24 overflow-hidden py-24 md:py-32"
+      className="relative scroll-mt-24 overflow-hidden py-20 md:py-32"
     >
-      <div className="mx-auto max-w-container px-6 md:px-8">
+      <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -62,14 +59,14 @@ export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
             {content.roadmap.eyebrow}
           </span>
-          <h2 className="mt-4 max-w-2xl text-2xl font-semibold md:text-[2.125rem] md:leading-[1.12]">
+          <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2.125rem] md:leading-[1.12]">
             {content.roadmap.title}
           </h2>
           <p className="mt-3 max-w-xl text-ink-muted">{content.roadmap.sub}</p>
         </motion.div>
       </div>
 
-      <div className="relative mx-auto mt-14 max-w-container px-6 md:mt-20 md:px-8">
+      <div className="relative mx-auto mt-12 max-w-container px-5 sm:px-6 md:mt-20 md:px-8">
         {/* Desktop: the road spans the whole block and the cards sit on top of
             it, so the ribbon reads as one continuous route between them rather
             than a strip squeezed into a middle lane. Faded at both ends so the
@@ -97,16 +94,16 @@ export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
         {/* Mobile: no illustration, a plain rail keeps the sequence readable. */}
         <div
           aria-hidden="true"
-          className="absolute inset-y-0 left-[30px] w-px bg-ink/10 md:hidden"
+          className="absolute inset-y-0 left-[24px] w-px bg-ink/10 sm:left-[30px] md:hidden"
         />
 
-        <ol className="relative space-y-8 md:space-y-10">
-          {stages.map((stage, i) => {
+        <ol className="relative space-y-7 sm:space-y-8 md:space-y-10">
+          {roadmapStages.map((stage, i) => {
             const onRight = i % 2 === 0; // stage 1 sits right, as on the reference
 
             return (
               <motion.li
-                key={stage._id}
+                key={stage.id}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: '-80px' }}
@@ -120,13 +117,13 @@ export const Roadmap = ({ stages }: { stages: RoadmapStage[] }) => {
                     transition: { duration: DURATION.standard, ease: EASE },
                   },
                 }}
-                className="relative pl-12 md:grid md:grid-cols-2 md:gap-10 md:pl-0 lg:gap-16"
+                className="relative pl-10 sm:pl-12 md:grid md:grid-cols-2 md:gap-10 md:pl-0 lg:gap-16"
               >
                 {/* Mobile only: with no illustration the rail is what carries
                     the sequence. On desktop the road already does that. */}
                 <span
                   aria-hidden="true"
-                  className="absolute left-[26px] top-8 h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_12px_hsl(var(--accent)/0.7)] md:hidden"
+                  className="absolute left-[20px] top-8 h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_12px_hsl(var(--accent)/0.7)] sm:left-[26px] md:hidden"
                 />
 
                 <div className={onRight ? 'md:col-start-2' : 'md:col-start-1'}>

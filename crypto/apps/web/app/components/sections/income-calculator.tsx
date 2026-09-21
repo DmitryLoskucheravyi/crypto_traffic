@@ -3,52 +3,37 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { content } from '../../lib/content';
-import { Course, SiteContent } from '../../lib/api';
+import { calculator, courses, type CourseTier } from '../../lib/site-data';
 import { fadeUp } from '../../lib/motion';
 import { CountUp } from '../ui/count-up';
 import { SelectField } from '../ui/select-field';
 
-type Calculator = NonNullable<SiteContent['calculator']>;
-
 const money = (value: number, currency: string) =>
   `${new Intl.NumberFormat('ru-RU').format(Math.round(value))} ${currency}`;
 
-export const IncomeCalculator = ({
-  calculator,
-  courses,
-}: {
-  calculator: Calculator | null;
-  courses: Course[];
-}) => {
-  // Tiers the owner configured, narrowed to courses that are actually on sale.
-  const tiers = useMemo(() => {
-    if (!calculator) return [];
-    return calculator.tiers.filter((t) => courses.some((c) => c.tier === t.tier));
-  }, [calculator, courses]);
+const tiers = calculator.tiers;
 
+export const IncomeCalculator = () => {
   const [amount, setAmount] = useState(() =>
-    calculator ? Math.round((calculator.amountMin + calculator.amountMax) / 2) : 0,
+    Math.round((calculator.amountMin + calculator.amountMax) / 2),
   );
-  const [tier, setTier] = useState(() => tiers[0]?.tier ?? '');
+  const [tier, setTier] = useState<CourseTier>(tiers[0].tier);
 
   const selected = tiers.find((t) => t.tier === tier) ?? tiers[0];
 
-  const range = useMemo(() => {
-    if (!selected) return null;
-    return {
+  const range = useMemo(
+    () => ({
       low: amount * (1 + selected.lowPct / 100),
       high: amount * (1 + selected.highPct / 100),
-    };
-  }, [amount, selected]);
+    }),
+    [amount, selected],
+  );
 
-  // Switched off, unconfigured, or no matching active course — no section.
-  if (!calculator || !selected || !range) return null;
-
-  const courseTitle = (value: string) => courses.find((c) => c.tier === value)?.title ?? value;
+  const courseTitle = (value: CourseTier) => courses.find((c) => c.tier === value)?.title ?? value;
 
   return (
-    <section className="py-24 md:py-32">
-      <div className="mx-auto max-w-container px-6 md:px-8">
+    <section className="py-20 md:py-32">
+      <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -58,20 +43,20 @@ export const IncomeCalculator = ({
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
             {content.calculator.eyebrow}
           </span>
-          <h2 className="mt-4 max-w-2xl text-2xl font-semibold md:text-[2.25rem] md:leading-[1.1]">
+          <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2.25rem] md:leading-[1.1]">
             {content.calculator.title}
           </h2>
           <p className="mt-3 max-w-xl text-ink-muted">{content.calculator.sub}</p>
         </motion.div>
 
-        <div className="mt-12 grid gap-8 rounded-2xl border border-ink/10 bg-surface/95 p-6 md:grid-cols-2 md:gap-12 md:p-10">
+        <div className="mt-10 grid gap-8 rounded-2xl border border-ink/10 bg-surface/95 p-5 sm:p-6 md:mt-12 md:grid-cols-2 md:gap-12 md:p-10">
           <div>
             <label htmlFor="calc-amount" className="block text-sm text-ink-muted">
               {content.calculator.amountLabel}
             </label>
             <output
               htmlFor="calc-amount"
-              className="mt-2 block font-mono text-3xl tabular-nums md:text-4xl"
+              className="mt-2 block font-mono text-2xl tabular-nums sm:text-3xl md:text-4xl"
             >
               {money(amount, calculator.currency)}
             </output>
@@ -83,7 +68,7 @@ export const IncomeCalculator = ({
               step={calculator.amountStep}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="calc-range mt-5 w-full"
+              className="calc-range mt-6 w-full"
             />
             <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-muted">
               <span>{money(calculator.amountMin, calculator.currency)}</span>
@@ -97,7 +82,7 @@ export const IncomeCalculator = ({
               <SelectField
                 labelId="calc-tier-label"
                 value={selected.tier}
-                onChange={setTier}
+                onChange={(value) => setTier(value as CourseTier)}
                 options={tiers.map((t) => ({ value: t.tier, label: courseTitle(t.tier) }))}
               />
             </div>
@@ -109,7 +94,7 @@ export const IncomeCalculator = ({
               {content.calculator.monthsLabel}
             </span>
 
-            <p className="mt-4 font-display text-3xl font-semibold tabular-nums text-accent md:text-[2.5rem] md:leading-tight">
+            <p className="mt-4 font-display text-[1.6rem] font-semibold leading-tight tabular-nums text-accent sm:text-3xl md:text-[2.5rem] md:leading-tight">
               <CountUp
                 key={`${selected.tier}-low`}
                 value={Math.round(range.low)}
@@ -121,14 +106,14 @@ export const IncomeCalculator = ({
                 value={Math.round(range.high)}
                 format={(v) => new Intl.NumberFormat('ru-RU').format(v)}
               />{' '}
-              <span className="text-2xl md:text-3xl">{calculator.currency}</span>
+              <span className="text-xl sm:text-2xl md:text-3xl">{calculator.currency}</span>
             </p>
 
             <p className="mt-5 text-xs leading-relaxed text-ink-muted">{calculator.disclaimer}</p>
 
             <a
               href="#courses"
-              className="mt-7 inline-flex w-fit items-center rounded-lg border border-ink/15 px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted transition-colors duration-quick hover:border-accent/40 hover:text-ink"
+              className="mt-7 inline-flex min-h-[44px] w-fit items-center rounded-lg border border-ink/15 px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted transition-colors duration-quick hover:border-accent/40 hover:text-ink"
             >
               {content.calculator.cta}
             </a>

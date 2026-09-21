@@ -55,7 +55,9 @@ export const SelectDemo = () => {
   }, [play, reduce]);
 
   const show = (delay: number) =>
-    play ? { opacity: 1, y: 0, transition: { duration: DURATION.standard, ease: EASE, delay } } : {};
+    play
+      ? { opacity: 1, y: 0, transition: { duration: DURATION.standard, ease: EASE, delay } }
+      : {};
 
   return (
     <div ref={ref}>
@@ -122,9 +124,11 @@ export const SelectDemo = () => {
 // terminal's own monospace. `price` is the real figure for the entry tier when
 // the API returned one; there is no invented number to fall back on, so without
 // it the demo types the honest line instead.
-export const PriceDemo = ({ title, price }: { title?: string; price?: string }) => {
+export const PriceDemo = ({ title }: { title?: string }) => {
   const { ref, play, reduce } = useStepPlay();
-  const line = price ? `цена: ${price}` : 'цена: актуальная в боте';
+  // Конкретной суммы здесь нет: цена живёт только в боте, демо показывает сам
+  // сценарий ответа.
+  const line = 'цена: актуальная в боте';
   const [typed, setTyped] = useState(0);
 
   useEffect(() => {
@@ -151,7 +155,9 @@ export const PriceDemo = ({ title, price }: { title?: string; price?: string }) 
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={
-              play ? { opacity: 1, y: 0, transition: { duration: DURATION.standard, ease: EASE } } : {}
+              play
+                ? { opacity: 1, y: 0, transition: { duration: DURATION.standard, ease: EASE } }
+                : {}
             }
             className="text-ink-muted"
           >
@@ -169,7 +175,9 @@ export const PriceDemo = ({ title, price }: { title?: string; price?: string }) 
 
           <motion.div
             initial={{ opacity: 0 }}
-            animate={done ? { opacity: 1, transition: { duration: DURATION.standard, ease: EASE } } : {}}
+            animate={
+              done ? { opacity: 1, transition: { duration: DURATION.standard, ease: EASE } } : {}
+            }
             className="text-[11px] text-ink-muted"
           >
             без скрытых условий
@@ -206,7 +214,9 @@ export const AccessDemo = () => {
               strokeLinecap="round"
               style={{ transformOrigin: '32px 22px' }}
               initial={{ rotate: 0, y: 0 }}
-              animate={play ? { rotate: reduce ? -28 : [0, -4, -28], y: reduce ? -3 : [0, 1, -3] } : {}}
+              animate={
+                play ? { rotate: reduce ? -28 : [0, -4, -28], y: reduce ? -3 : [0, 1, -3] } : {}
+              }
               transition={{ duration: 0.9, delay: 0.25, times: [0, 0.35, 1], ease: EASE }}
             />
             <rect

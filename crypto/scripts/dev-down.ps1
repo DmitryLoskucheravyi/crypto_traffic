@@ -11,11 +11,11 @@
     Не чіпати контейнер mongo (використовує dev-up.ps1 -Restart).
 
 .PARAMETER Only
-    Погасити лише вказані сервіси: mongo, api, bot, admin, web.
+    Погасити лише вказані сервіси: mongo, api, web.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('mongo', 'api', 'bot', 'admin', 'web')]
+    [ValidateSet('mongo', 'api', 'web')]
     [string[]]$Only,
     [switch]$KeepMongo
 )
@@ -59,15 +59,13 @@ function Stop-Tree($procId, $label) {
 # порти беремо з .env, щоб не розходились із dev-up
 $ports = @{}
 foreach ($line in (Get-Content (Join-Path $root '.env') -Encoding UTF8)) {
-    if ($line -match '^\s*(API_PORT|WEB_PORT|ADMIN_PORT|BOT_PORT)\s*=\s*(\d+)') {
+    if ($line -match '^\s*(API_PORT|WEB_PORT)\s*=\s*(\d+)') {
         $ports[$Matches[1]] = [int]$Matches[2]
     }
 }
 $byName = @{
-    api   = $ports['API_PORT']
-    bot   = $ports['BOT_PORT']
-    admin = $ports['ADMIN_PORT']
-    web   = $ports['WEB_PORT']
+    api = $ports['API_PORT']
+    web = $ports['WEB_PORT']
 }
 
 Write-Step 'Гашу node-сервіси'
@@ -90,7 +88,7 @@ if (Test-Path $pidFile) {
 }
 
 # 2) контрольний прохід по портах — ловить процеси, підняті повз скрипт
-foreach ($name in @('api', 'bot', 'admin', 'web')) {
+foreach ($name in @('api', 'web')) {
     if (-not (Test-Wanted $name)) { continue }
     $port = $byName[$name]
     if (-not $port) { continue }
@@ -109,7 +107,7 @@ foreach ($proc in (Get-CimInstance Win32_Process -Filter "Name='cmd.exe'" -Error
     if ($proc.CommandLine -notlike "*$logDir*") { continue }
 
     $match = $null
-    foreach ($name in @('api', 'bot', 'admin', 'web')) {
+    foreach ($name in @('api', 'web')) {
         if ($proc.CommandLine -like "*\$name.log*") { $match = $name }
     }
     if ($match -and -not (Test-Wanted $match)) { continue }

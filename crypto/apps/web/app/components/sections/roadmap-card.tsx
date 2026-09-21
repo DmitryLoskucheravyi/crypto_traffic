@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useId, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { content } from '../../lib/content';
-import { RoadmapStage } from '../../lib/api';
+import { RoadmapStage } from '../../lib/site-data';
 import { DURATION, EASE } from '../../lib/motion';
 
 // «5 уроков» / «1 урок» / «2 урока» — three forms, no i18n library for one word.
@@ -50,7 +50,7 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
   return (
     <motion.div
       variants={panel}
-      className="group relative rounded-xl border border-ink/10 bg-surface/95 p-6 backdrop-blur-md transition-colors duration-standard ease-premium hover:border-accent/30"
+      className="group relative rounded-xl border border-ink/10 bg-surface/95 p-5 backdrop-blur-md transition-colors duration-standard ease-premium hover:border-accent/30 sm:p-6"
     >
       {stage.imageUrl && (
         // Deliberately static: no entrance, no reaction to the card opening.
@@ -60,14 +60,14 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
         // the transformed siblings below it.
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-2 -top-6 z-10 h-24 w-24 select-none"
+          className="pointer-events-none absolute -right-1 -top-5 z-10 h-20 w-20 select-none sm:-right-2 sm:-top-6 sm:h-24 sm:w-24"
         >
           <Image
             src={stage.imageUrl}
             alt=""
             width={96}
             height={96}
-            className="h-24 w-24 object-contain"
+            className="h-full w-full object-contain"
           />
         </div>
       )}
@@ -104,7 +104,7 @@ export const RoadmapCard = ({ stage }: { stage: RoadmapStage }) => {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-controls={panelId}
-            className="mt-5 w-full rounded-lg border border-ink/15 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted transition-colors duration-quick ease-premium hover:border-accent/40 hover:text-ink"
+            className="mt-5 min-h-[44px] w-full rounded-lg border border-ink/15 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-muted transition-colors duration-quick ease-premium hover:border-accent/40 hover:text-ink"
           >
             {content.roadmap.structureCta}
           </button>

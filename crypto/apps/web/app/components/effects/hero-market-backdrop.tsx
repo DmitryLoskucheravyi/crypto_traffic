@@ -111,13 +111,27 @@ const CELL_H = 42;
 const GRID_COLS = 15;
 const GRID_ROWS = 17;
 
-type Route = { d: string; length: number; dur: number; begin: number; bear: boolean; reverse: boolean };
+type Route = {
+  d: string;
+  length: number;
+  dur: number;
+  begin: number;
+  bear: boolean;
+  reverse: boolean;
+};
 
 // Hand-placed starts: a purely random draw kept clumping the routes into the
 // same corner of the grid. The walk itself stays random.
 const STARTS: [number, number][] = [
-  [1, 3], [5, 12], [9, 2], [13, 9], [3, 15],
-  [7, 6], [11, 14], [2, 9], [14, 4],
+  [1, 3],
+  [5, 12],
+  [9, 2],
+  [13, 9],
+  [3, 15],
+  [7, 6],
+  [11, 14],
+  [2, 9],
+  [14, 4],
 ];
 
 // Random walk along cell edges, never doubling straight back on itself, so the
@@ -143,9 +157,7 @@ function buildRoute(rand: () => number, start: [number, number]): { d: string; l
     axis = axis === 0 ? 1 : 0; // alternate so every move is a corner
   }
 
-  const d = pts
-    .map(([c, r], i) => `${i === 0 ? 'M' : 'L'}${c * CELL_W},${r * CELL_H}`)
-    .join(' ');
+  const d = pts.map(([c, r], i) => `${i === 0 ? 'M' : 'L'}${c * CELL_W},${r * CELL_H}`).join(' ');
   return { d, length };
 }
 
@@ -226,10 +238,11 @@ export const HeroMarketBackdrop = () => {
 
   useEffect(() => {
     if (reduceMotion || !lineRef.current) return;
-    lineRef.current.animate(
-      [{ opacity: 0.3 }, { opacity: 0.75 }, { opacity: 0.3 }],
-      { duration: 2800, iterations: Infinity, easing: 'ease-in-out' },
-    );
+    lineRef.current.animate([{ opacity: 0.3 }, { opacity: 0.75 }, { opacity: 0.3 }], {
+      duration: 2800,
+      iterations: Infinity,
+      easing: 'ease-in-out',
+    });
   }, [reduceMotion]);
 
   return (
@@ -300,8 +313,22 @@ export const HeroMarketBackdrop = () => {
                 }}
                 style={{ transformOrigin: `${x}px ${CHART_H}px` }}
               >
-                <line x1={x} y1={toY(c.high)} x2={x} y2={toY(c.low)} stroke={color} strokeWidth={2.2} />
-                <rect x={x - bodyW / 2} y={bodyTop} width={bodyW} height={bodyH} fill={color} rx={1.5} />
+                <line
+                  x1={x}
+                  y1={toY(c.high)}
+                  x2={x}
+                  y2={toY(c.low)}
+                  stroke={color}
+                  strokeWidth={2.2}
+                />
+                <rect
+                  x={x - bodyW / 2}
+                  y={bodyTop}
+                  width={bodyW}
+                  height={bodyH}
+                  fill={color}
+                  rx={1.5}
+                />
                 <rect
                   x={x - bodyW / 2}
                   y={CHART_H + VOLUME_H * (1 - c.volume) + 10}
