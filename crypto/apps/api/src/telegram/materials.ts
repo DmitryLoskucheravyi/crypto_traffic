@@ -4,10 +4,15 @@ import type { CourseTier } from '../catalog/catalog';
 
 // Чем выдавать курс — настраивается через окружение, по одной переменной на
 // уровень. Принимаются три формы, потому что в жизни встречаются все три:
-//   COURSE_MATERIAL_BASIC=/srv/materials/basic.pdf   — файл на диске
+//   COURSE_MATERIAL_BASIC=materials/basic.pdf        — файл на диске
 //   COURSE_MATERIAL_BASIC=https://.../basic.pdf      — ссылка
 //   COURSE_MATERIAL_BASIC=BQACAgIAAxkBAA...          — file_id уже залитого в Telegram файла
 // file_id заметно дешевле остальных: Telegram не перекачивает файл заново.
+//
+// Относительный путь считается от рабочего каталога процесса. В dev это корень
+// crypto/ (туда заходит scripts/dev-up.ps1), в контейнере — /app, куда
+// docker-compose монтирует ./materials. Поэтому одна и та же строка
+// "materials/…" работает и там, и там.
 
 export type Material =
   | { kind: 'path'; value: string; filename: string }

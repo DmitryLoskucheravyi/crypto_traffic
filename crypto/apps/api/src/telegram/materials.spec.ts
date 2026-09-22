@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { resolveMaterial } from './materials';
 
 const exists = () => true;
@@ -48,6 +51,30 @@ describe('resolveMaterial', () => {
     );
 
     expect(material).toEqual({ kind: 'fileId', value: 'BQACAgIAAxkBAAIB' });
+  });
+
+  // Курсы выдаются файлами с кириллицей в имени и по пути относительно корня
+  // проекта — на настоящей файловой системе, без подменённого existsSync.
+  it('находит настоящий файл по относительному пути с кириллицей', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'materials-'));
+    const cwd = process.cwd();
+
+    try {
+      writeFileSync(join(dir, 'Криптотрейдинг_базовый_уровень.pdf'), '%PDF-1.4\n');
+      process.chdir(dir);
+
+      const material = resolveMaterial('basic', {
+        COURSE_MATERIAL_BASIC: './Криптотрейдинг_базовый_уровень.pdf',
+      });
+
+      expect(material?.kind).toBe('path');
+      expect(material && 'filename' in material && material.filename).toBe(
+        'Криптотрейдинг_базовый_уровень.pdf',
+      );
+    } finally {
+      process.chdir(cwd);
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('берёт переменную своего уровня, а не соседнего', () => {

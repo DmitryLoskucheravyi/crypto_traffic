@@ -27,6 +27,10 @@ services:
       PORT: ${API_PORT}
     ports:
       - '127.0.0.1:${API_PORT}:${API_PORT}'
+    volumes:
+      # Материалы курсов не запекаются в образ: образ уезжает в GHCR, а это
+      # платный продукт. Только чтение — боту достаточно.
+      - ./materials:/app/materials:ro
     depends_on:
       - mongo
     networks:
