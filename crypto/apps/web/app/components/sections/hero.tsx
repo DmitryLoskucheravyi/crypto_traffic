@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { content } from '../../lib/content';
-import { BOT_URL } from '../../lib/site-data';
+import { BOT_URL } from '../../lib/config';
 import { CtaArrow } from '../icons';
 import { HeroMarketBackdrop } from '../effects/hero-market-backdrop';
 import { fadeUp, fadeUpStagger } from '../../lib/motion';

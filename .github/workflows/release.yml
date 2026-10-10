@@ -36,7 +36,9 @@ jobs:
           tags: |
             type=ref,event=tag
             type=sha,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
+            # Релиз запускается тегом или вручную, и на теге is_default_branch
+            # всегда ложен — latest ставим безусловно.
+            type=raw,value=latest
 
       - uses: docker/build-push-action@v6
         with:
@@ -67,7 +69,15 @@ jobs:
 
       - run: npm ci --ignore-scripts
 
+      # Адрес сайта и ссылки запекаются в статику на сборке. Берутся из
+      # переменных репозитория (Settings → Variables); пока не заданы, сборка
+      # идёт с фолбэками из apps/web/app/lib (localhost и встроенный бот).
       - run: npm run build --workspace apps/web
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_TELEGRAM_BOT_USERNAME: ${{ vars.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME }}
+          NEXT_PUBLIC_TELEGRAM_CHANNEL_USERNAME: ${{ vars.NEXT_PUBLIC_TELEGRAM_CHANNEL_USERNAME }}
+          NEXT_PUBLIC_INSTAGRAM_USERNAME: ${{ vars.NEXT_PUBLIC_INSTAGRAM_USERNAME }}
 
       - name: Архив статики
         run: tar -czf landing-static.tar.gz -C apps/web/out .

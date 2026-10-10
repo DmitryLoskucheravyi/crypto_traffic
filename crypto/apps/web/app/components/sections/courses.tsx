@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
-import { BOT_URL, courses, type Course } from '../../lib/site-data';
+import { courses, type Course } from '../../lib/site-data';
+import { BOT_URL } from '../../lib/config';
 import { content } from '../../lib/content';
 import { TierCheck, CtaArrow } from '../icons';
 import { fadeUp, DURATION, EASE } from '../../lib/motion';
@@ -193,7 +194,7 @@ const CourseCard = ({
 };
 
 export const Courses = () => (
-  <section id="courses" className="scroll-mt-24 py-20 md:py-32">
+  <section id="courses" aria-labelledby="courses-title" className="scroll-mt-24 py-20 md:py-32">
     <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
       <motion.div
         initial="hidden"
@@ -201,7 +202,10 @@ export const Courses = () => (
         viewport={{ once: true, margin: '-100px' }}
         variants={fadeUp}
       >
-        <h2 className="text-[1.6rem] font-bold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]">
+        <h2
+          id="courses-title"
+          className="text-[1.6rem] font-bold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]"
+        >
           {content.courses.title}
         </h2>
         <p className="mt-3 max-w-lg text-ink-muted">{content.courses.sub}</p>

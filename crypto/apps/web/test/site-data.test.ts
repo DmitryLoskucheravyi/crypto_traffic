@@ -2,8 +2,6 @@ import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { describe, expect, it } from 'vitest';
 import {
-  BOT_URL,
-  BOT_USERNAME,
   calculator,
   comparison,
   counters,
@@ -34,11 +32,6 @@ describe('статический контент лендинга', () => {
       expect(course).not.toHaveProperty('priceUsdt');
       expect(course).not.toHaveProperty('currency');
     }
-  });
-
-  it('ведёт в того же бота отовсюду', () => {
-    expect(BOT_USERNAME).toMatch(/^[A-Za-z0-9_]{5,32}$/);
-    expect(BOT_URL).toBe(`https://t.me/${BOT_USERNAME}`);
   });
 
   it('этапы пути идут по порядку и с уникальными id', () => {

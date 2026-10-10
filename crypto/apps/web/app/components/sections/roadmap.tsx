@@ -46,6 +46,7 @@ export const Roadmap = () => {
   return (
     <section
       id="roadmap"
+      aria-labelledby="roadmap-title"
       ref={sectionRef}
       className="relative scroll-mt-24 overflow-hidden py-20 md:py-32"
     >
@@ -59,7 +60,10 @@ export const Roadmap = () => {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
             {content.roadmap.eyebrow}
           </span>
-          <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2.125rem] md:leading-[1.12]">
+          <h2
+            id="roadmap-title"
+            className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2.125rem] md:leading-[1.12]"
+          >
             {content.roadmap.title}
           </h2>
           <p className="mt-3 max-w-xl text-ink-muted">{content.roadmap.sub}</p>
@@ -83,7 +87,7 @@ export const Roadmap = () => {
           }}
         >
           <Image
-            src="/roadmap-path.png"
+            src="/roadmap-path.webp"
             alt=""
             fill
             sizes="(max-width: 1280px) 100vw, 1280px"

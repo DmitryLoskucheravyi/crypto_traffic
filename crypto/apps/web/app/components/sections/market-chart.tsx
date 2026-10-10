@@ -5,8 +5,15 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { content } from '../../lib/content';
-import { seededRandom } from '../../lib/seeded-random';
+import {
+  buildPolyline,
+  randomWalk,
+  xAtLengthFraction,
+  yAtX,
+  type Polyline,
+} from '../../lib/charts/polyline';
 import { fadeUp } from '../../lib/motion';
+import { formatQuote } from '../../lib/format';
 
 const HEIGHT = 360;
 const VIEWPORT = 1280;
@@ -44,82 +51,18 @@ const LINES = [
   },
 ] as const;
 
-type Geometry = {
-  width: number;
-  d: string;
-  pts: [number, number][];
-  cum: number[]; // cumulative polyline length at each point
-  length: number;
-};
-
-function buildPoints(
-  seed: number,
-  baseline: number,
-  amp: number,
-  width: number,
-): [number, number][] {
-  const rand = seededRandom(seed);
-  const points = Math.round((width / 2200) * 60);
-  let y = HEIGHT * baseline;
-  const pts: [number, number][] = [];
-  for (let i = 0; i <= points; i++) {
-    const x = (i / points) * width;
-    y += (rand() - 0.5) * amp;
-    y = Math.min(HEIGHT * 0.92, Math.max(HEIGHT * 0.08, y));
-    pts.push([x, y]);
-  }
-  return pts;
-}
-
 // A line that pans further needs a proportionally longer path, otherwise its
 // tail scrolls past the right edge before the section is done.
-const GEOMETRY: Geometry[] = LINES.map((line) => {
+const GEOMETRY: Polyline[] = LINES.map((line) => {
   const width = VIEWPORT + PAN * line.speed;
-  const pts = buildPoints(line.seed, line.baseline, line.amp, width);
-  const cum = [0];
-  for (let i = 1; i < pts.length; i++) {
-    const dx = pts[i][0] - pts[i - 1][0];
-    const dy = pts[i][1] - pts[i - 1][1];
-    cum.push(cum[i - 1] + Math.hypot(dx, dy));
-  }
-  return {
-    width,
-    pts,
-    cum,
-    length: cum[cum.length - 1],
-    d: pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' '),
-  };
+  const pts = randomWalk({ ...line, width, height: HEIGHT });
+  return buildPolyline(pts, width);
 });
-
-// Where the stroke's drawn tip is, in user units, once `fraction` of the path's
-// LENGTH has been revealed. The jitter makes length and x diverge, so reading
-// the cumulative table is what keeps the cursor exactly on the tip instead of
-// floating ahead of it.
-function xAtLengthFraction(g: Geometry, fraction: number): number {
-  const target = Math.max(0, Math.min(1, fraction)) * g.length;
-  let i = 1;
-  while (i < g.cum.length - 1 && g.cum[i] < target) i++;
-  const span = g.cum[i] - g.cum[i - 1] || 1;
-  const t = (target - g.cum[i - 1]) / span;
-  return g.pts[i - 1][0] + (g.pts[i][0] - g.pts[i - 1][0]) * t;
-}
-
-function yAtX(g: Geometry, x: number): number {
-  const segments = g.pts.length - 1;
-  const raw = (x / g.width) * segments;
-  const i = Math.max(0, Math.min(segments - 1, Math.floor(raw)));
-  const t = Math.max(0, Math.min(1, raw - i));
-  return g.pts[i][1] + (g.pts[i + 1][1] - g.pts[i][1]) * t;
-}
 
 // Atmospheric only: a random walk started from a fixed seed value, never a real
 // quote. Labelled "демо" on screen and generated client-side after mount, so
 // there is no fabricated figure in the server-rendered markup either.
 const START = 64128.4;
-const fmt = (v: number) => {
-  const [int, frac] = v.toFixed(2).split('.');
-  return `${int.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')},${frac}`;
-};
 
 // Its own component on purpose: the tape updates every couple of seconds and
 // re-rendering the chart with it would fight the transforms GSAP writes.
@@ -149,7 +92,7 @@ const Ticker = () => {
           quote.up ? 'text-accent' : 'text-bear'
         }`}
       >
-        {fmt(quote.value)}
+        {formatQuote(quote.value)}
       </div>
     </div>
   );
@@ -270,7 +213,12 @@ export const MarketChart = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="overflow-hidden py-20 md:py-32">
+    <section
+      ref={sectionRef}
+      id="market"
+      aria-labelledby="market-title"
+      className="scroll-mt-24 overflow-hidden py-20 md:py-32"
+    >
       <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
@@ -283,7 +231,10 @@ export const MarketChart = () => {
             <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
               {content.marketChart.eyebrow}
             </span>
-            <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]">
+            <h2
+              id="market-title"
+              className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]"
+            >
               {content.marketChart.title}
             </h2>
             <p className="mt-3 max-w-lg text-ink-muted">{content.marketChart.sub}</p>

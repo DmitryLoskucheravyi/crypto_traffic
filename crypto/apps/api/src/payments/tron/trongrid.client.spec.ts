@@ -1,6 +1,6 @@
-import { TronService, USDT_TRC20_CONTRACT } from './tron.service';
-
-const WALLET = 'TStubWalletAddressForTests000000000';
+import { USDT_TRC20_CONTRACT } from '../../config/app-config';
+import { TEST_WALLET as WALLET, testConfig } from '../../testing/test-config';
+import { TronGridClient } from './trongrid.client';
 
 type FetchMock = jest.Mock<Promise<Partial<Response>>, [URL | string, RequestInit?]>;
 
@@ -26,28 +26,19 @@ function item(overrides: Record<string, unknown> = {}) {
   };
 }
 
-describe('TronService', () => {
-  let service: TronService;
+describe('TronGridClient', () => {
+  let service: TronGridClient;
   let fetchMock: FetchMock;
 
   beforeEach(() => {
-    process.env.TRON_WALLET_ADDRESS = WALLET;
-    process.env.TRONGRID_API_KEY = 'test-key';
-    delete process.env.TRON_API_URL;
-    service = new TronService();
+    service = new TronGridClient(testConfig());
     fetchMock = jest.fn() as unknown as FetchMock;
     global.fetch = fetchMock as unknown as typeof fetch;
   });
 
-  afterEach(() => {
-    delete process.env.TRON_WALLET_ADDRESS;
-    delete process.env.TRONGRID_API_KEY;
-  });
-
   it('молчит, пока не заданы кошелёк и ключ', async () => {
-    delete process.env.TRON_WALLET_ADDRESS;
+    service = new TronGridClient(testConfig({ TRON_WALLET_ADDRESS: '' }));
 
-    expect(service.configured).toBe(false);
     expect(await service.fetchIncoming(0)).toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -89,6 +80,7 @@ describe('TronService', () => {
         item({ to: 'TSomeoneElse', transaction_id: 'tx-2' }),
         item({ transaction_id: undefined }),
         item({ value: undefined, transaction_id: 'tx-3' }),
+        item({ block_timestamp: undefined, transaction_id: 'tx-4' }),
       ]),
     );
 

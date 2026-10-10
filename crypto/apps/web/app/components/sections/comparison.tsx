@@ -9,7 +9,11 @@ import { fadeUp } from '../../lib/motion';
 // weaker side is simply muted and the course side carries the accent.
 export const Comparison = () => {
   return (
-    <section className="py-20 md:py-32">
+    <section
+      id="comparison"
+      aria-labelledby="comparison-title"
+      className="scroll-mt-24 py-20 md:py-32"
+    >
       <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
@@ -20,7 +24,10 @@ export const Comparison = () => {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
             {content.comparison.eyebrow}
           </span>
-          <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]">
+          <h2
+            id="comparison-title"
+            className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2rem] md:leading-[1.15]"
+          >
             {content.comparison.title}
           </h2>
         </motion.div>

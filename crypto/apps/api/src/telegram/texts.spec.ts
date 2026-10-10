@@ -1,5 +1,5 @@
 import { CATALOG, findCourse } from '../catalog/catalog';
-import type { Order } from '../payments/order.schema';
+import type { Order } from '../payments/domain/order';
 import { courseCard, invoice, pendingNotice, paidNotice } from './texts';
 
 function order(overrides: Partial<Order> = {}): Order {
@@ -13,9 +13,9 @@ function order(overrides: Partial<Order> = {}): Order {
     wallet: 'TStubWalletAddressForTests000000000',
     status: 'pending',
     expiresAt: new Date(Date.now() + 30 * 60_000),
+    notified: false,
     delivered: false,
     createdAt: new Date(),
-    updatedAt: new Date(),
     ...overrides,
   } as Order;
 }
@@ -28,7 +28,7 @@ describe('тексты бота', () => {
   });
 
   it('в реквизитах сумма стоит целиком, с четырьмя знаками', () => {
-    const text = invoice(findCourse('basic')!, order());
+    const text = invoice(findCourse('basic')!, order(), new Date());
 
     expect(text).toContain('<code>10.0304</code>');
     expect(text).toContain('TRC20');
@@ -36,7 +36,11 @@ describe('тексты бота', () => {
   });
 
   it('предупреждает, что сумма должна совпасть в точности', () => {
-    const text = invoice(findCourse('medium')!, order({ amount: 25.4211, baseAmount: 25 }));
+    const text = invoice(
+      findCourse('medium')!,
+      order({ amount: 25.4211, baseAmount: 25 }),
+      new Date(),
+    );
 
     expect(text).toContain('ровно');
     expect(text).toContain('25.4211');

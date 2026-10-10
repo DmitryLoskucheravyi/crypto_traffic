@@ -7,17 +7,13 @@ const exists = () => true;
 const missing = () => false;
 
 describe('resolveMaterial', () => {
-  it('без переменной окружения материалов нет', () => {
-    expect(resolveMaterial('basic', {}, exists)).toBeNull();
-    expect(resolveMaterial('basic', { COURSE_MATERIAL_BASIC: '   ' }, exists)).toBeNull();
+  it('без значения материалов нет', () => {
+    expect(resolveMaterial(null, exists)).toBeNull();
+    expect(resolveMaterial('   ', exists)).toBeNull();
   });
 
   it('узнаёт ссылку', () => {
-    const material = resolveMaterial(
-      'medium',
-      { COURSE_MATERIAL_MEDIUM: 'https://cdn.example/courses/medium.pdf' },
-      missing,
-    );
+    const material = resolveMaterial('https://cdn.example/courses/medium.pdf', missing);
 
     expect(material).toEqual({
       kind: 'url',
@@ -27,28 +23,18 @@ describe('resolveMaterial', () => {
   });
 
   it('узнаёт путь на диске', () => {
-    const material = resolveMaterial(
-      'advanced',
-      { COURSE_MATERIAL_ADVANCED: 'materials/advanced.pdf' },
-      exists,
-    );
+    const material = resolveMaterial('materials/advanced.pdf', exists);
 
     expect(material?.kind).toBe('path');
     expect(material && 'filename' in material && material.filename).toBe('advanced.pdf');
   });
 
   it('не выдаёт путь, которого нет на диске, за file_id', () => {
-    expect(
-      resolveMaterial('advanced', { COURSE_MATERIAL_ADVANCED: 'materials/advanced.pdf' }, missing),
-    ).toBeNull();
+    expect(resolveMaterial('materials/advanced.pdf', missing)).toBeNull();
   });
 
   it('всё остальное считает file_id — Telegram не перекачивает файл заново', () => {
-    const material = resolveMaterial(
-      'basic',
-      { COURSE_MATERIAL_BASIC: 'BQACAgIAAxkBAAIB' },
-      missing,
-    );
+    const material = resolveMaterial('BQACAgIAAxkBAAIB', missing);
 
     expect(material).toEqual({ kind: 'fileId', value: 'BQACAgIAAxkBAAIB' });
   });
@@ -63,9 +49,7 @@ describe('resolveMaterial', () => {
       writeFileSync(join(dir, 'Криптотрейдинг_базовый_уровень.pdf'), '%PDF-1.4\n');
       process.chdir(dir);
 
-      const material = resolveMaterial('basic', {
-        COURSE_MATERIAL_BASIC: './Криптотрейдинг_базовый_уровень.pdf',
-      });
+      const material = resolveMaterial('./Криптотрейдинг_базовый_уровень.pdf');
 
       expect(material?.kind).toBe('path');
       expect(material && 'filename' in material && material.filename).toBe(
@@ -75,17 +59,5 @@ describe('resolveMaterial', () => {
       process.chdir(cwd);
       rmSync(dir, { recursive: true, force: true });
     }
-  });
-
-  it('берёт переменную своего уровня, а не соседнего', () => {
-    const env = {
-      COURSE_MATERIAL_BASIC: 'file-basic',
-      COURSE_MATERIAL_MEDIUM: 'file-medium',
-      COURSE_MATERIAL_ADVANCED: 'file-advanced',
-    };
-
-    expect(resolveMaterial('basic', env, missing)).toMatchObject({ value: 'file-basic' });
-    expect(resolveMaterial('medium', env, missing)).toMatchObject({ value: 'file-medium' });
-    expect(resolveMaterial('advanced', env, missing)).toMatchObject({ value: 'file-advanced' });
   });
 });

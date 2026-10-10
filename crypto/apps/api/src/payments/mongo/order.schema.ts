@@ -1,12 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { TIERS, type CourseTier } from '../catalog/catalog';
+import { TIERS, type CourseTier } from '../../catalog/catalog';
+import { ORDER_STATUSES, type Order, type OrderStatus } from '../domain/order';
 
-export const ORDER_STATUSES = ['pending', 'paid', 'expired', 'cancelled'] as const;
-export type OrderStatus = (typeof ORDER_STATUSES)[number];
+// Отображение доменного Order на коллекцию Mongo. Смысл полей описан в
+// domain/order.ts — здесь только то, что касается хранения: типы и индексы.
 
 @Schema({ timestamps: true, collection: 'orders' })
-export class Order {
+export class OrderRecord implements Order {
   @Prop({ required: true, unique: true, index: true })
   orderId: string;
 
@@ -20,19 +21,12 @@ export class Order {
   @Prop({ required: true, type: String, enum: [...TIERS] })
   tier: CourseTier;
 
-  /** Цена уровня из каталога, без хвоста. */
   @Prop({ required: true })
   baseAmount: number;
 
-  /** Точная сумма перевода, которую назвали пользователю. */
   @Prop({ required: true })
   amount: number;
 
-  /**
-   * Та же сумма строкой с фиксированными 4 знаками — по ней ищется заказ, когда
-   * приходит перевод. Именно поэтому она хранится отдельно от `amount`:
-   * сравнивать double с double на попадание «ровно в сумму» нельзя.
-   */
   @Prop({ required: true })
   amountKey: string;
 
@@ -54,21 +48,24 @@ export class Order {
   @Prop({ type: Date })
   paidAt?: Date;
 
-  /** Хеш транзакции, которой закрылся заказ. */
   @Prop({ type: String, index: true, sparse: true })
   txId?: string;
 
-  /** Материалы отправлены в чат — чтобы повторный тик воркера не слал их дважды. */
+  @Prop({ default: false })
+  notified: boolean;
+
   @Prop({ default: false })
   delivered: boolean;
 
   createdAt: Date;
-  updatedAt: Date;
 }
 
-export type OrderDocument = HydratedDocument<Order>;
+export type OrderDocument = HydratedDocument<OrderRecord>;
 
-export const OrderSchema = SchemaFactory.createForClass(Order);
+/** Имя модели — прежнее, чтобы коллекция и индексы на живой базе не менялись. */
+export const ORDER_MODEL = 'Order';
+
+export const OrderSchema = SchemaFactory.createForClass(OrderRecord);
 
 // Две суммы, ждущие оплаты одновременно, совпасть не должны — иначе платёж
 // нечем развести по заказам. Индекс частичный: у закрытых заказов сумма может

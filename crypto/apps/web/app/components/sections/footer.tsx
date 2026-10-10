@@ -1,5 +1,6 @@
 import { content } from '../../lib/content';
-import { BOT_USERNAME, BOT_URL } from '../../lib/site-data';
+import { config } from '../../lib/config';
+import { InstagramMark, TelegramMark } from '../icons';
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <li>
@@ -10,6 +11,30 @@ const NavLink = ({ href, children }: { href: string; children: React.ReactNode }
       {children}
     </a>
   </li>
+);
+
+// Квадратная клавиша того же рисунка, что у тоггла в FAQ. Подпись едет текстом в
+// sr-only, а не в aria-label: его видят и скринридер, и поисковик — иначе три ссылки
+// подряд остались бы безымянными картинками без анкорного текста.
+const SocialLink = ({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    title={label}
+    className="inline-flex h-10 w-10 items-center justify-center rounded-[4px] border border-ink/15 text-ink-muted transition-colors duration-standard ease-premium hover:border-accent/40 hover:text-accent"
+  >
+    {children}
+    <span className="sr-only">{label}</span>
+  </a>
 );
 
 export const Footer = () => (
@@ -37,6 +62,8 @@ export const Footer = () => (
             {content.footer.navLabel}
           </span>
           <ul className="mt-4 space-y-2.5">
+            <NavLink href="#program">{content.footer.links.program}</NavLink>
+            <NavLink href="#how-it-works">{content.footer.links.howItWorks}</NavLink>
             <NavLink href="#roadmap">{content.footer.links.roadmap}</NavLink>
             <NavLink href="#courses">{content.footer.links.courses}</NavLink>
             <NavLink href="#faq">{content.footer.links.faq}</NavLink>
@@ -48,14 +75,43 @@ export const Footer = () => (
             {content.footer.contactLabel}
           </span>
           <a
-            href={BOT_URL}
+            href={config.bot.url}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 inline-flex items-center gap-2 text-sm text-ink transition-colors duration-quick ease-premium hover:text-accent"
           >
-            @{BOT_USERNAME}
+            @{config.bot.username}
             <span aria-hidden="true">↗</span>
           </a>
+
+          {/* Бот и Instagram есть всегда, канал — только если задан в окружении:
+              пустая переменная не оставляет после себя битую ссылку. */}
+          <ul aria-label={content.footer.social.label} className="mt-4 flex items-center gap-2">
+            <li>
+              <SocialLink href={config.bot.url} label={content.footer.social.bot}>
+                <TelegramMark size={18} />
+              </SocialLink>
+            </li>
+            {config.channel && (
+              <li>
+                <SocialLink
+                  href={config.channel.url}
+                  label={`${content.footer.social.channel} @${config.channel.username}`}
+                >
+                  <TelegramMark size={18} />
+                </SocialLink>
+              </li>
+            )}
+            <li>
+              <SocialLink
+                href={config.instagram.url}
+                label={`${content.footer.social.instagram} @${config.instagram.username}`}
+              >
+                <InstagramMark size={18} />
+              </SocialLink>
+            </li>
+          </ul>
+
           <p className="mt-3 text-xs leading-relaxed text-ink-muted">
             {content.footer.contactNote}
           </p>

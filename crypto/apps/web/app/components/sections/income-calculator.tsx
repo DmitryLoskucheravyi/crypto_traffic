@@ -4,35 +4,29 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { content } from '../../lib/content';
 import { calculator, courses, type CourseTier } from '../../lib/site-data';
+import { initialAmount, projectIncome, tierRates } from '../../lib/calculator';
+import { formatMoney, formatNumber } from '../../lib/format';
 import { fadeUp } from '../../lib/motion';
 import { CountUp } from '../ui/count-up';
 import { SelectField } from '../ui/select-field';
 
-const money = (value: number, currency: string) =>
-  `${new Intl.NumberFormat('ru-RU').format(Math.round(value))} ${currency}`;
-
 const tiers = calculator.tiers;
 
 export const IncomeCalculator = () => {
-  const [amount, setAmount] = useState(() =>
-    Math.round((calculator.amountMin + calculator.amountMax) / 2),
-  );
+  const [amount, setAmount] = useState(() => initialAmount(calculator));
   const [tier, setTier] = useState<CourseTier>(tiers[0].tier);
 
-  const selected = tiers.find((t) => t.tier === tier) ?? tiers[0];
-
-  const range = useMemo(
-    () => ({
-      low: amount * (1 + selected.lowPct / 100),
-      high: amount * (1 + selected.highPct / 100),
-    }),
-    [amount, selected],
-  );
+  const selected = tierRates(calculator, tier);
+  const range = useMemo(() => projectIncome(amount, selected), [amount, selected]);
 
   const courseTitle = (value: CourseTier) => courses.find((c) => c.tier === value)?.title ?? value;
 
   return (
-    <section className="py-20 md:py-32">
+    <section
+      id="calculator"
+      aria-labelledby="calculator-title"
+      className="scroll-mt-24 py-20 md:py-32"
+    >
       <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
@@ -43,7 +37,10 @@ export const IncomeCalculator = () => {
           <span className="font-mono text-xs uppercase tracking-[0.2em] text-accent">
             {content.calculator.eyebrow}
           </span>
-          <h2 className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2.25rem] md:leading-[1.1]">
+          <h2
+            id="calculator-title"
+            className="mt-4 max-w-2xl text-[1.6rem] font-semibold leading-tight sm:text-2xl md:text-[2.25rem] md:leading-[1.1]"
+          >
             {content.calculator.title}
           </h2>
           <p className="mt-3 max-w-xl text-ink-muted">{content.calculator.sub}</p>
@@ -58,7 +55,7 @@ export const IncomeCalculator = () => {
               htmlFor="calc-amount"
               className="mt-2 block font-mono text-2xl tabular-nums sm:text-3xl md:text-4xl"
             >
-              {money(amount, calculator.currency)}
+              {formatMoney(amount, calculator.currency)}
             </output>
             <input
               id="calc-amount"
@@ -71,8 +68,8 @@ export const IncomeCalculator = () => {
               className="calc-range mt-6 w-full"
             />
             <div className="mt-2 flex justify-between font-mono text-[11px] text-ink-muted">
-              <span>{money(calculator.amountMin, calculator.currency)}</span>
-              <span>{money(calculator.amountMax, calculator.currency)}</span>
+              <span>{formatMoney(calculator.amountMin, calculator.currency)}</span>
+              <span>{formatMoney(calculator.amountMax, calculator.currency)}</span>
             </div>
 
             <span id="calc-tier-label" className="mt-8 block text-sm text-ink-muted">
@@ -98,13 +95,13 @@ export const IncomeCalculator = () => {
               <CountUp
                 key={`${selected.tier}-low`}
                 value={Math.round(range.low)}
-                format={(v) => new Intl.NumberFormat('ru-RU').format(v)}
+                format={formatNumber}
               />
               {' — '}
               <CountUp
                 key={`${selected.tier}-high`}
                 value={Math.round(range.high)}
-                format={(v) => new Intl.NumberFormat('ru-RU').format(v)}
+                format={formatNumber}
               />{' '}
               <span className="text-xl sm:text-2xl md:text-3xl">{calculator.currency}</span>
             </p>

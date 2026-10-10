@@ -41,6 +41,13 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # Домен запекается в canonical, sitemap.xml и og:image на сборке.
+        # Поменяли домен — нужен docker compose build web, не просто restart.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_TELEGRAM_BOT_USERNAME: ${NEXT_PUBLIC_TELEGRAM_BOT_USERNAME}
+        NEXT_PUBLIC_TELEGRAM_CHANNEL_USERNAME: ${NEXT_PUBLIC_TELEGRAM_CHANNEL_USERNAME}
+        NEXT_PUBLIC_INSTAGRAM_USERNAME: ${NEXT_PUBLIC_INSTAGRAM_USERNAME}
     restart: unless-stopped
     ports:
       - '127.0.0.1:${WEB_PORT}:80'

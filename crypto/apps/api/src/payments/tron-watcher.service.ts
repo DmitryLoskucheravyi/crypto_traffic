@@ -1,8 +1,7 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { APP_CONFIG, type AppConfig } from '../config/app-config';
 import { PaymentsService } from './payments.service';
-import { TronService } from './tron.service';
-
-const DEFAULT_POLL_MS = 20_000;
+import { TronGridClient } from './tron/trongrid.client';
 
 /**
  * «Слушатель» кошелька: раз в N секунд спрашивает у TronGrid, что прилетело на
@@ -10,7 +9,8 @@ const DEFAULT_POLL_MS = 20_000;
  *
  * Курсор держится в памяти и стартует на TTL заказа назад: всё, что старше,
  * всё равно относится к уже просроченным заказам, а такой запас переживает
- * рестарт процесса без потери только что пришедшего платежа.
+ * рестарт процесса без потери только что пришедшего платежа. Повторно
+ * прочитанные переводы безопасны — settle не принимает один txId дважды.
  */
 @Injectable()
 export class TronWatcherService implements OnModuleInit, OnModuleDestroy {
@@ -20,19 +20,15 @@ export class TronWatcherService implements OnModuleInit, OnModuleDestroy {
   private running = false;
 
   constructor(
-    private readonly tron: TronService,
+    private readonly tron: TronGridClient,
     private readonly payments: PaymentsService,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
-  get pollIntervalMs(): number {
-    const raw = Number(process.env.PAYMENT_POLL_INTERVAL_MS);
-    return Number.isFinite(raw) && raw >= 5_000 ? raw : DEFAULT_POLL_MS;
-  }
-
   onModuleInit(): void {
-    this.cursor = Date.now() - this.payments.ttlMinutes * 60_000;
+    this.cursor = Date.now() - this.config.payments.ttlMinutes * 60_000;
 
-    if (!this.tron.configured) {
+    if (!this.config.tron.watcherEnabled) {
       this.logger.warn(
         'TRON_WALLET_ADDRESS / TRONGRID_API_KEY не заданы — слушатель платежей выключен. ' +
           'Бот работает, заказы создаются, но закрывать их придётся вручную.',
@@ -40,11 +36,12 @@ export class TronWatcherService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    this.timer = setInterval(() => void this.tick(), this.pollIntervalMs);
+    const interval = this.config.tron.pollIntervalMs;
+    this.timer = setInterval(() => void this.tick(), interval);
     // unref: пустой таймер не должен держать процесс живым при выключении.
     this.timer.unref?.();
     this.logger.log(
-      `Слушатель USDT TRC20 запущен: ${this.tron.wallet}, опрос раз в ${this.pollIntervalMs} мс`,
+      `Слушатель USDT TRC20 запущен: ${this.config.tron.wallet}, опрос раз в ${interval} мс`,
     );
     void this.tick();
   }

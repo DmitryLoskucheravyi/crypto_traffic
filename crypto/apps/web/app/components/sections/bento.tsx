@@ -226,7 +226,11 @@ export const Bento = () => {
   const next = (active + 1) % COUNT;
 
   return (
-    <section className="overflow-x-clip py-20 md:py-32">
+    <section
+      id="program"
+      aria-labelledby="program-title"
+      className="scroll-mt-24 overflow-x-clip py-20 md:py-32"
+    >
       <div className="max-w-container mx-auto px-5 sm:px-6 md:px-8">
         <div className="md:grid md:grid-cols-10 md:gap-12">
           {/* Left rail — sticks alongside the track on desktop, stacks above it
@@ -244,7 +248,10 @@ export const Bento = () => {
               <span className="text-ink-muted">{pad(COUNT)}</span>
             </span>
 
-            <h2 className="mt-6 max-w-md font-display text-[1.75rem] uppercase leading-[1.02] tracking-tight sm:text-3xl sm:leading-[0.95] md:text-5xl">
+            <h2
+              id="program-title"
+              className="mt-6 max-w-md font-display text-[1.75rem] uppercase leading-[1.02] tracking-tight sm:text-3xl sm:leading-[0.95] md:text-5xl"
+            >
               {content.bento.title}
             </h2>
             <p className="mt-5 max-w-md text-ink-muted">{content.bento.sub}</p>

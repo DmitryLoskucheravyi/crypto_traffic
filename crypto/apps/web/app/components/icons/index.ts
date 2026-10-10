@@ -1,5 +1,6 @@
 export { CtaArrow } from './cta-arrow';
 export { TelegramMark } from './telegram-mark';
+export { InstagramMark } from './instagram-mark';
 export { StepSelect } from './step-select';
 export { StepPrice } from './step-price';
 export { StepAccess } from './step-access';

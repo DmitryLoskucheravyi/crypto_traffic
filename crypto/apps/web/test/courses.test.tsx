@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Courses } from '../app/components/sections/courses';
-import { BOT_URL, courses } from '../app/lib/site-data';
+import { BOT_URL } from '../app/lib/config';
+import { courses } from '../app/lib/site-data';
 import { content } from '../app/lib/content';
 
 describe('секция «Уровни курсов»', () => {

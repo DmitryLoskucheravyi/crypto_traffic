@@ -1,6 +1,7 @@
+import { testConfig } from '../testing/test-config';
+import type { Trc20Transfer } from './domain/transfer';
 import { PaymentsService } from './payments.service';
-import type { Trc20Transfer } from './tron.service';
-import { TronService } from './tron.service';
+import { TronGridClient } from './tron/trongrid.client';
 import { TronWatcherService } from './tron-watcher.service';
 
 function transfer(amountKey: string, timestamp: number, txId = amountKey): Trc20Transfer {
@@ -15,29 +16,23 @@ function transfer(amountKey: string, timestamp: number, txId = amountKey): Trc20
   };
 }
 
-function makeStubs() {
+function makeStubs(env: NodeJS.ProcessEnv = {}) {
   const tron = {
-    configured: true,
-    wallet: 'TWallet',
     fetchIncoming: jest.fn<Promise<Trc20Transfer[]>, [number, number?]>(),
   };
   const payments = {
-    ttlMinutes: 60,
     expireStale: jest.fn().mockResolvedValue(0),
     settle: jest.fn().mockResolvedValue([]),
   };
   const watcher = new TronWatcherService(
-    tron as unknown as TronService,
+    tron as unknown as TronGridClient,
     payments as unknown as PaymentsService,
+    testConfig(env),
   );
   return { tron, payments, watcher };
 }
 
 describe('TronWatcherService', () => {
-  afterEach(() => {
-    delete process.env.PAYMENT_POLL_INTERVAL_MS;
-  });
-
   it('гасит просроченные заказы и отдаёт переводы на сверку', async () => {
     const { tron, payments, watcher } = makeStubs();
     tron.fetchIncoming.mockResolvedValue([transfer('10.0304', 1_000)]);
@@ -99,19 +94,8 @@ describe('TronWatcherService', () => {
     await expect(watcher.tick()).resolves.toBeUndefined();
   });
 
-  it('не берёт интервал опроса меньше пяти секунд', () => {
-    const { watcher } = makeStubs();
-
-    process.env.PAYMENT_POLL_INTERVAL_MS = '200';
-    expect(watcher.pollIntervalMs).toBe(20_000);
-
-    process.env.PAYMENT_POLL_INTERVAL_MS = '45000';
-    expect(watcher.pollIntervalMs).toBe(45_000);
-  });
-
   it('не стартует таймер без реквизитов', () => {
-    const { tron, watcher } = makeStubs();
-    tron.configured = false;
+    const { tron, watcher } = makeStubs({ TRONGRID_API_KEY: '' });
 
     watcher.onModuleInit();
 

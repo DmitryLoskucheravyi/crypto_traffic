@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { content } from '../../lib/content';
-import { BOT_URL } from '../../lib/site-data';
+import { BOT_URL } from '../../lib/config';
 import { CtaArrow, TelegramMark } from '../icons';
 import { CandleTexture } from '../effects/candle-texture';
 import { fadeUp } from '../../lib/motion';
@@ -13,7 +13,7 @@ export const FinalCta = () => {
   const magnetic = useMagnetic<HTMLAnchorElement>();
 
   return (
-    <section className="py-20 md:py-32">
+    <section aria-labelledby="final-cta-title" className="py-20 md:py-32">
       <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.div
           initial="hidden"
@@ -40,7 +40,10 @@ export const FinalCta = () => {
             <TelegramMark size={32} className="text-accent" />
             {/* The one step back UP the ladder — it is the closing ask, so it
                 outranks every heading below the bento. */}
-            <h2 className="mt-6 text-[1.5rem] font-semibold leading-tight sm:text-[1.75rem] md:text-[2.25rem] md:leading-[1.1]">
+            <h2
+              id="final-cta-title"
+              className="mt-6 text-[1.5rem] font-semibold leading-tight sm:text-[1.75rem] md:text-[2.25rem] md:leading-[1.1]"
+            >
               <ScrambleText text={content.finalCta.title} trigger="inView" />
             </h2>
             <p className="mt-3 max-w-md text-ink-muted">{content.finalCta.sub}</p>

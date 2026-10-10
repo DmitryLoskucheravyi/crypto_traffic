@@ -1,6 +1,6 @@
-// Снимок контента, который раньше жил в Mongo и редактировался из админки.
-// Админки больше нет: лендинг собирается статически, и этот файл — его
-// единственный источник данных. Правки контента = правка этого файла + деплой.
+// Структурированные данные лендинга: уровни, этапы программы, калькулятор,
+// счётчики, сравнение, бегущая строка. Тексты интерфейса — в content.ts,
+// внешние ссылки и адрес сайта — в config.ts.
 
 export type CourseTier = 'basic' | 'medium' | 'advanced';
 
@@ -48,9 +48,6 @@ export type Comparison = {
   rightTitle: string;
   rows: Array<{ label: string; left: string; right: string }>;
 };
-
-export const BOT_USERNAME = 'crypto_course_sell_bot';
-export const BOT_URL = `https://t.me/${BOT_USERNAME}`;
 
 export const courses: Course[] = [
   {

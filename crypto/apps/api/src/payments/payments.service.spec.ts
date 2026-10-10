@@ -1,118 +1,32 @@
-import { Model } from 'mongoose';
+import { InMemoryOrderRepository } from '../testing/in-memory-order.repository';
+import { TEST_WALLET, testConfig } from '../testing/test-config';
+import type { Order } from './domain/order';
+import type { Trc20Transfer } from './domain/transfer';
+import { OrderEvents } from './order-events';
+import { DuplicateAmountError } from './order.repository';
 import { PaymentsService, WalletNotConfiguredError } from './payments.service';
-import type { Order, OrderDocument } from './order.schema';
-import type { Trc20Transfer } from './tron.service';
 
-const WALLET = 'TStubWalletAddressForTests000000000';
-
-type Doc = Record<string, any>;
-
-/**
- * Мини-Mongo на массиве: поддерживает ровно те формы запросов, которыми
- * пользуется PaymentsService. Так тесты не требуют ни контейнера, ни сети —
- * а значит, реально гоняются в CI на каждом пуше.
- */
-class FakeOrderModel {
-  docs: Doc[] = [];
-
-  create(doc: Doc) {
-    if (doc.status === 'pending' && this.docs.some(isPendingWith(doc.amountKey))) {
-      return Promise.reject(Object.assign(new Error('duplicate key'), { code: 11000 }));
-    }
-    const stored = { ...doc, createdAt: new Date(), updatedAt: new Date() };
-    this.docs.push(stored);
-    return Promise.resolve({ toObject: () => ({ ...stored }) });
-  }
-
-  findOne(filter: Doc) {
-    return lean(() => {
-      const found = this.docs.find((doc) => matches(doc, filter));
-      return found ? { ...found } : null;
-    });
-  }
-
-  find(filter: Doc) {
-    return lean(() => this.docs.filter((doc) => matches(doc, filter)).map((doc) => ({ ...doc })));
-  }
-
-  findOneAndUpdate(filter: Doc, update: Doc) {
-    return lean(() => {
-      const found = this.docs
-        .filter((doc) => matches(doc, filter))
-        .sort((a, b) => a.createdAt - b.createdAt)[0];
-      if (!found) return null;
-      Object.assign(found, update.$set ?? {});
-      return { ...found };
-    });
-  }
-
-  updateMany(filter: Doc, update: Doc) {
-    return exec(() => {
-      const hits = this.docs.filter((doc) => matches(doc, filter));
-      hits.forEach((doc) => Object.assign(doc, update.$set ?? {}));
-      return { modifiedCount: hits.length };
-    });
-  }
-
-  updateOne(filter: Doc, update: Doc) {
-    return exec(() => {
-      const found = this.docs.find((doc) => matches(doc, filter));
-      if (found) Object.assign(found, update.$set ?? {});
-      return { modifiedCount: found ? 1 : 0 };
-    });
-  }
-}
-
-const isPendingWith = (amountKey: string) => (doc: Doc) =>
-  doc.status === 'pending' && doc.amountKey === amountKey;
-
-function lean<T>(read: () => T) {
-  return { lean: () => ({ exec: () => Promise.resolve(read()) }) };
-}
-
-function exec<T>(run: () => T) {
-  return { exec: () => Promise.resolve(run()) };
-}
-
-function matches(doc: Doc, filter: Doc): boolean {
-  return Object.entries(filter).every(([key, expected]) => {
-    const actual = doc[key];
-    if (expected && typeof expected === 'object' && !(expected instanceof Date)) {
-      const ops = expected as Record<string, unknown>;
-      if ('$gt' in ops && !(actual > (ops.$gt as never))) return false;
-      if ('$lte' in ops && !(actual <= (ops.$lte as never))) return false;
-      return true;
-    }
-    return actual === expected;
-  });
-}
-
-function transfer(amountKey: string, txId = 'tx-1'): Trc20Transfer {
+function transfer(amountKey: string, txId = 'tx-1', timestamp = Date.now()): Trc20Transfer {
   return {
     txId,
     from: 'TSenderAddress',
-    to: WALLET,
+    to: TEST_WALLET,
     amountKey,
     rawValue: '0',
     symbol: 'USDT',
-    timestamp: Date.now(),
+    timestamp,
   };
 }
 
 describe('PaymentsService', () => {
-  let model: FakeOrderModel;
+  let repo: InMemoryOrderRepository;
+  let events: OrderEvents;
   let service: PaymentsService;
 
   beforeEach(() => {
-    process.env.TRON_WALLET_ADDRESS = WALLET;
-    process.env.PAYMENT_TTL_MINUTES = '60';
-    model = new FakeOrderModel();
-    service = new PaymentsService(model as unknown as Model<OrderDocument>);
-  });
-
-  afterEach(() => {
-    delete process.env.TRON_WALLET_ADDRESS;
-    delete process.env.PAYMENT_TTL_MINUTES;
+    repo = new InMemoryOrderRepository();
+    events = new OrderEvents();
+    service = new PaymentsService(repo, events, testConfig());
   });
 
   describe('createOrder', () => {
@@ -123,7 +37,7 @@ describe('PaymentsService', () => {
       expect(order.amount).toBeGreaterThan(10);
       expect(order.amount).toBeLessThan(11);
       expect(order.amountKey).toMatch(/^10[.]\d{4}$/);
-      expect(order.wallet).toBe(WALLET);
+      expect(order.wallet).toBe(TEST_WALLET);
       expect(order.status).toBe('pending');
     });
 
@@ -144,21 +58,20 @@ describe('PaymentsService', () => {
       const second = await service.createOrder(7, 'advanced');
 
       expect(second.orderId).toBe(first.orderId);
-      expect(model.docs).toHaveLength(1);
+      expect(repo.orders).toHaveLength(1);
     });
 
-    it('переживает гонку по уникальному индексу и берёт другую сумму', async () => {
+    it('переживает гонку за сумму и берёт другой хвост', async () => {
       // Соседний процесс успел занять ту же сумму между выборкой занятых и
-      // вставкой — Mongo отвечает 11000, и заказ должен взять другой хвост.
-      const real = model.create.bind(model);
+      // вставкой — хранилище отвечает DuplicateAmountError.
+      const real = repo.insert.bind(repo);
       let calls = 0;
-      model.create = ((doc: Doc) => {
+      repo.insert = (order: Order) => {
         calls += 1;
-        if (calls === 1) {
-          return Promise.reject(Object.assign(new Error('duplicate key'), { code: 11000 }));
-        }
-        return real(doc);
-      }) as FakeOrderModel['create'];
+        return calls === 1
+          ? Promise.reject(new DuplicateAmountError(order.amountKey))
+          : real(order);
+      };
 
       const order = await service.createOrder(9, 'basic');
 
@@ -167,7 +80,7 @@ describe('PaymentsService', () => {
     });
 
     it('не берёт заказ, когда кошелёк не настроен', async () => {
-      delete process.env.TRON_WALLET_ADDRESS;
+      service = new PaymentsService(repo, events, testConfig({ TRON_WALLET_ADDRESS: '' }));
 
       await expect(service.createOrder(1, 'basic')).rejects.toBeInstanceOf(
         WalletNotConfiguredError,
@@ -182,17 +95,13 @@ describe('PaymentsService', () => {
       const paid = await service.settle([transfer(order.amountKey, 'tx-abc')]);
 
       expect(paid).toHaveLength(1);
-      expect(paid[0].orderId).toBe(order.orderId);
-      expect(paid[0].status).toBe('paid');
-      expect(paid[0].txId).toBe('tx-abc');
+      expect(paid[0]).toMatchObject({ orderId: order.orderId, status: 'paid', txId: 'tx-abc' });
     });
 
     it('игнорирует перевод на сумму без заказа', async () => {
       await service.createOrder(1, 'basic');
 
-      const paid = await service.settle([transfer('10.9999')]);
-
-      expect(paid).toEqual([]);
+      expect(await service.settle([transfer('10.9999')])).toEqual([]);
     });
 
     it('разводит одновременные заказы по хвостам суммы', async () => {
@@ -201,52 +110,66 @@ describe('PaymentsService', () => {
 
       const paid = await service.settle([transfer(second.amountKey, 'tx-2')]);
 
-      expect(paid).toHaveLength(1);
-      expect(paid[0].telegramId).toBe(2);
-      expect(await service.findActiveOrder(1)).toMatchObject({ orderId: first.orderId });
+      expect(paid.map((o) => o.telegramId)).toEqual([2]);
+      expect((await service.findOrder(first.orderId))?.status).toBe('pending');
     });
 
     it('не закрывает один заказ дважды', async () => {
       const order = await service.createOrder(1, 'basic');
 
       await service.settle([transfer(order.amountKey, 'tx-1')]);
-      const second = await service.settle([transfer(order.amountKey, 'tx-1')]);
 
-      expect(second).toEqual([]);
+      expect(await service.settle([transfer(order.amountKey, 'tx-1')])).toEqual([]);
     });
 
-    it('не принимает оплату просроченного заказа', async () => {
+    it('не принимает перевод, отправленный после конца срока', async () => {
       const order = await service.createOrder(1, 'basic');
-      model.docs[0].expiresAt = new Date(Date.now() - 1000);
+      repo.orders[0].expiresAt = new Date(Date.now() - 1000);
 
-      const paid = await service.settle([transfer(order.amountKey)]);
-
-      expect(paid).toEqual([]);
+      expect(await service.settle([transfer(order.amountKey)])).toEqual([]);
     });
 
-    it('зовёт подписчиков на каждый закрытый заказ', async () => {
-      const seen: Order[] = [];
-      service.onPaid((order) => {
-        seen.push(order);
+    it('засчитывает платёж, отправленный до конца срока, даже если заказ уже просрочен', async () => {
+      const order = await service.createOrder(1, 'basic');
+      const sentAt = Date.now();
+      repo.orders[0].expiresAt = new Date(sentAt + 1000);
+      repo.orders[0].status = 'expired';
+
+      const paid = await service.settle([transfer(order.amountKey, 'tx-late', sentAt)]);
+
+      expect(paid.map((o) => o.orderId)).toEqual([order.orderId]);
+    });
+
+    it('не отдаёт старый перевод новому заказу с той же суммой', async () => {
+      const order = await service.createOrder(1, 'basic');
+      // Перевод ушёл за час до заказа: так выглядит платёж по прошлому
+      // заказу, перечитанный после рестарта.
+      const old = transfer(order.amountKey, 'tx-old', Date.now() - 60 * 60_000);
+
+      expect(await service.settle([old])).toEqual([]);
+    });
+
+    it('одна транзакция не закрывает два заказа', async () => {
+      const first = await service.createOrder(1, 'basic');
+      await service.settle([transfer(first.amountKey, 'tx-once')]);
+
+      // Сумма освободилась и досталась следующему заказу.
+      const second = await service.createOrder(2, 'basic');
+      repo.orders[1].amountKey = first.amountKey;
+
+      expect(await service.settle([transfer(first.amountKey, 'tx-once')])).toEqual([]);
+      expect((await service.findOrder(second.orderId))?.status).toBe('pending');
+    });
+
+    it('сообщает об оплате через OrderEvents', async () => {
+      const seen: string[] = [];
+      events.onPaid((order) => {
+        seen.push(order.orderId);
       });
       const order = await service.createOrder(1, 'medium');
 
       await service.settle([transfer(order.amountKey)]);
 
-      expect(seen.map((o) => o.orderId)).toEqual([order.orderId]);
-    });
-
-    it('падение одного подписчика не мешает остальным', async () => {
-      const seen: string[] = [];
-      service.onPaid(() => {
-        throw new Error('bang');
-      });
-      service.onPaid((order) => {
-        seen.push(order.orderId);
-      });
-      const order = await service.createOrder(1, 'basic');
-
-      await expect(service.settle([transfer(order.amountKey)])).resolves.toHaveLength(1);
       expect(seen).toEqual([order.orderId]);
     });
   });
@@ -254,11 +177,11 @@ describe('PaymentsService', () => {
   describe('жизненный цикл заказа', () => {
     it('освобождает сумму просроченного заказа', async () => {
       const order = await service.createOrder(1, 'basic');
-      model.docs[0].expiresAt = new Date(Date.now() - 1);
+      repo.orders[0].expiresAt = new Date(Date.now() - 1);
 
       expect(await service.expireStale()).toBe(1);
 
-      const reused = await service.createOrder(2, 'basic');
+      const reused = await service.createOrder(1, 'basic');
       expect(reused.orderId).not.toBe(order.orderId);
     });
 

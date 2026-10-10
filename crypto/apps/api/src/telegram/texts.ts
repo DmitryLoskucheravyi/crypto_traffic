@@ -1,9 +1,9 @@
 import type { Course } from '../catalog/catalog';
-import type { Order } from '../payments/order.schema';
+import { minutesLeft, type Order } from '../payments/domain/order';
 
-// Тексты бота вынесены из сервиса: это единственная часть, которую хочется
-// читать и править глазами, и единственная, которую имеет смысл покрывать
-// тестами без Telegraf вокруг.
+// Тексты бота — чистые функции: данные на входе, строка на выходе. Время
+// тоже приходит аргументом, поэтому одинаковый вход всегда даёт одинаковый
+// текст, и тесты не зависят от часов.
 
 export const NETWORK_LABEL = 'USDT · сеть TRON (TRC20)';
 
@@ -36,7 +36,7 @@ export function courseCard(course: Course): string {
  * поэтому она вынесена отдельной строкой моноширинным блоком (в Telegram такой
  * блок копируется одним тапом) и сопровождается прямым предупреждением.
  */
-export function invoice(course: Course, order: Order): string {
+export function invoice(course: Course, order: Order, now: Date): string {
   return [
     `<b>${course.title}</b> — оплата`,
     '',
@@ -49,7 +49,7 @@ export function invoice(course: Course, order: Order): string {
     '⚠️ Сумма указана с точностью до четвёртого знака — именно по ней бот узнаёт ваш платёж.',
     'Перевод на другую сумму или в другой сети найти не получится.',
     '',
-    `Реквизиты действительны до ${formatTime(order.expiresAt)} (${minutesLeft(order)} мин).`,
+    `Реквизиты действительны до ${formatTime(order.expiresAt)} (${minutesLeft(order, now)} мин).`,
     'После зачисления материалы придут сюда автоматически.',
   ].join('\n');
 }
@@ -85,6 +85,14 @@ export function materialsFallback(course: Course): string {
   ].join('\n');
 }
 
+export function alreadyDeliveredNotice(): string {
+  return 'Оплата получена, материалы уже отправлены выше в этом чате.';
+}
+
+export function deliveryRetryNotice(): string {
+  return 'Оплата получена, материалы отправляются. Если через минуту файла нет, нажмите кнопку ещё раз.';
+}
+
 export function cancelledNotice(): string {
   return 'Заказ отменён. Сумма освобождена — можно начать заново: /start';
 }
@@ -97,12 +105,12 @@ export function walletMissingNotice(): string {
   return 'Приём оплаты временно недоступен: реквизиты не настроены. Напишите позже.';
 }
 
-export function unknownCourseNotice(): string {
-  return 'Такого курса нет. Нажмите /start, чтобы увидеть актуальный список.';
+export function invoiceFailedNotice(): string {
+  return 'Не получилось выставить счёт. Попробуйте ещё раз через минуту.';
 }
 
-function minutesLeft(order: Order): number {
-  return Math.max(1, Math.round((order.expiresAt.getTime() - Date.now()) / 60_000));
+export function unknownCourseNotice(): string {
+  return 'Такого курса нет. Нажмите /start, чтобы увидеть актуальный список.';
 }
 
 function formatTime(date: Date): string {

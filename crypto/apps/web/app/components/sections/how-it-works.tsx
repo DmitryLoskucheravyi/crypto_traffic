@@ -86,9 +86,14 @@ export const HowItWorks = () => {
   ];
 
   return (
-    <section className="relative pt-20 md:pt-32">
+    <section
+      id="how-it-works"
+      aria-labelledby="how-it-works-title"
+      className="relative scroll-mt-24 pt-20 md:pt-32"
+    >
       <div className="mx-auto max-w-container px-5 sm:px-6 md:px-8">
         <motion.h2
+          id="how-it-works-title"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
